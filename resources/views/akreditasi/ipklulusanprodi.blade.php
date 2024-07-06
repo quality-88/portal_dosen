@@ -7,7 +7,7 @@
         <div class="col-md-12 grid-margin stretch-card">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="mb-4">IPK LULUSAN /PRODI</h4>
+                    <h4 class="mb-4">RINCIAN LULUSAN /PRODI</h4>
                     <form class="row g-5" action="{{ route('HitungIPK') }}" method="POST">
                         @csrf
                         <div class="col-md-4">
@@ -42,7 +42,7 @@
     </div>
     @if(isset($results))
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12 grid-margin stretch-card">
             <div class="card">
                 <div class="card-body">
                     <h6 class="card-title">Data Table</h6>
@@ -66,6 +66,16 @@
                             </tbody>
                         </table>
                     </div>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    
                     <div class="col-md-12">
                         <button class="btn btn-primary btn-lg float-end" onclick="downloadPDF()">Download PDF</button>
                         

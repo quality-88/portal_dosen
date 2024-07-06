@@ -48,6 +48,7 @@
         </div>
     </div>
     @if(isset($data) && count($data['fakultasData']) > 0)
+    
         <div class="row">
             <div class="col-md-12 grid-margin stretch-card">
                 <div class="card">
@@ -72,9 +73,7 @@
                                     <th> ({{ date('d-m-Y', strtotime($endDate . ' -1 day')) }})</th>
                                     <th> ({{ date('d-m-Y', strtotime($endDate)) }})</th>
                                     <th>Jumlah</th>
-                                    <th> ({{ date('d-m-Y', strtotime($endDate . ' -1 day')) }})</th>
                                     <th> ({{ date('d-m-Y', strtotime($endDate)) }})</th>
-                                    <th>Jumlah</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -89,8 +88,6 @@
                                     <td>{{ $data['daftarUlangsebelumnya'][$fakultas->prodi] ?? 0 }}</td>
                                     <td>{{ $data['dafarUlanghariini'][$fakultas->prodi] ?? 0 }}</td>
                                     <td>{{ $data['totalUlang'][$fakultas->prodi] ?? 0 }}</td>
-                                    <td>{{ $data['tidakdaftar'][$fakultas->prodi] ?? 0 }}</td>
-                                    <td>{{ $data['tidakUlang'][$fakultas->prodi] ?? 0 }}</td>
                                     <td>{{ $data['totalTidak'][$fakultas->prodi] ?? 0 }}</td>
                                     <td></td>
                                 </tr>
@@ -136,24 +133,30 @@
     var universitas = "{{ session('universitas') }}";
     var endDate = "{{ session('endDate') }}";
     var lokasiText = "{{ $universitas === 'UQM' ? 'MEDAN' : ($universitas === 'UQB' ? 'BERASTAGI' : '') }}";
-  
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString('en-US');
+    const formattedTime = currentDate.toLocaleTimeString('en-US');
+    const printDateTime = `Print Date: ${formattedDate} / Print Time: ${formattedTime}`;
+    doc.setFontSize(10);
+    doc.text(printDateTime, 50, 90);
     // Menambahkan teks informasi ke dokumen PDF
     doc.setFontSize(25);
-
     doc.setTextColor(0, 0, 0);
     doc.text(`UNIVERSITAS QUALITY ${lokasiText}`, 230, 40);
     doc.text(`PMB Monitoring ${ta}`, 310, 80);
+    // Menambahkan tanggal cetak di sini
+
     var tableData = [];
 
     // Header tambahan
     var additionalHeader = [
-        { content: 'No', colSpan: 1, styles: { halign: 'center', fontStyle: 'bold' } },
-        { content: 'Fakultas', colSpan: 1, styles: { halign: 'center', fontStyle: 'bold' } },
-        { content: 'Prodi', colSpan: 1, styles: { halign: 'center', fontStyle: 'bold' } },
-        { content: 'Daftar', colSpan: 3, styles: { halign: 'center', fontStyle: 'bold' } },
-        { content: 'Daftar Ulang', colSpan: 3, styles: { halign: 'center', fontStyle: 'bold' } },
-        { content: 'Tidak Daftar Ulang', colSpan: 3, styles: { halign: 'center', fontStyle: 'bold' } }
-    ];
+    { content: 'No', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } },
+    { content: 'Fakultas', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } },
+    { content: 'Prodi', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } },
+    { content: 'Daftar', colSpan: 3, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } },
+    { content: 'Daftar Ulang', colSpan: 3, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } },
+    { content: 'Tidak Daftar Ulang', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } }
+];
 
     // Menambahkan header tambahan ke dalam data tabel
     tableData.push(additionalHeader);
@@ -166,28 +169,25 @@
     `({{ date('d-m-Y', strtotime($endDate . ' -1 day')) }})`,
     `({{ date('d-m-Y', strtotime($endDate)) }})`,
     'Jumlah',
-    `({{ date('d-m-Y', strtotime($endDate . ' -1 day')) }})`,
-    `({{ date('d-m-Y', strtotime($endDate)) }})`,
-    'Jumlah'
+    `({{ date('d-m-Y', strtotime($endDate)) }})`
     ]);
 
     // Menambahkan data ke dalam tabel
     data.fakultasData.forEach((fakultas, index) => {
         tableData.push([
-            index + 1,
-            fakultas.fakultas,
-            fakultas.prodi,
-            data.daftarsebelumnya[fakultas.prodi] ?? 0,
-            data.dafarhariini[fakultas.prodi] ?? 0,
-            data.totalCounts[fakultas.prodi] ?? 0,
-            data.daftarUlangsebelumnya[fakultas.prodi] ?? 0,
-            data.dafarUlanghariini[fakultas.prodi] ?? 0,
-            data.totalUlang[fakultas.prodi] ?? 0,
-            data.tidakdaftar[fakultas.prodi] ?? 0,
-            data.tidakUlang[fakultas.prodi] ?? 0,
-            data.totalTidak[fakultas.prodi] ?? 0
-        ]);
-    });
+    { content: index + 1, styles: { halign: 'center', valign: 'middle',fontSize: 10 } },
+    { content: fakultas.fakultas, styles: { halign: 'center', valign: 'middle',fontSize: 10 } },
+    { content: fakultas.prodi, styles: { halign: 'center', valign: 'middle',fontSize: 10 } },
+    { content: data.daftarsebelumnya[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
+    { content: data.dafarhariini[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
+    { content: data.totalCounts[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
+    { content: data.daftarUlangsebelumnya[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
+    { content: data.dafarUlanghariini[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
+    { content: data.totalUlang[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
+    { content: data.totalTidak[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle',fontSize: 10 } }
+]);
+
+});
     // Hitung total dari setiap kolom
     var totalDaftarSebelumnya = 0;
     var totalDaftarHariIni = 0;
@@ -195,8 +195,6 @@
     var totalDaftarUlangSebelumnya = 0;
     var totalDaftarUlangHariIni = 0;
     var totalJumlahDaftarUlang = 0;
-    var totalTidakDaftar = 0;
-    var totalTidakUlang = 0;
     var totalJumlahTidak = 0;
 
     data.fakultasData.forEach(fakultas => {
@@ -206,47 +204,44 @@
     totalDaftarUlangSebelumnya += data.daftarUlangsebelumnya[fakultas.prodi] ?? 0;
     totalDaftarUlangHariIni += data.dafarUlanghariini[fakultas.prodi] ?? 0;
     totalJumlahDaftarUlang += data.totalUlang[fakultas.prodi] ?? 0;
-    totalTidakDaftar += data.tidakdaftar[fakultas.prodi] ?? 0;
-    totalTidakUlang += data.tidakUlang[fakultas.prodi] ?? 0;
     totalJumlahTidak += data.totalTidak[fakultas.prodi] ?? 0;
 });
 
 // Menambahkan baris total ke dalam data tabel
+// Baris total dengan ukuran teks lebih besar
 tableData.push([
-        { content: '', styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: 'Total', styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: '', styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: totalDaftarSebelumnya, styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: totalDaftarHariIni, styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: totalJumlahDaftar, styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: totalDaftarUlangSebelumnya, styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: totalDaftarUlangHariIni, styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: totalJumlahDaftarUlang, styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: totalTidakDaftar, styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: totalTidakUlang, styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } },
-        { content: totalJumlahTidak, styles: { fontStyle: 'bold', fillColor: [153, 255, 255], textColor: [0, 0, 0] } }
-    ]);
+    { content: '', styles: { fontSize: 12, fillColor: [153, 255, 255], textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+    { content: 'Total', styles: { fontSize: 12, fillColor: [153, 255, 255], textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+    { content: '', styles: { fontSize: 12, fillColor: [153, 255, 255], textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+    { content: totalDaftarSebelumnya, styles: { fontSize: 12, fillColor: [153, 255, 255], textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+    { content: totalDaftarHariIni, styles: { fontSize: 12, fillColor: [153, 255, 255], textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+    { content: totalJumlahDaftar, styles: { fontSize: 12, fillColor: [153, 255, 255], textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+    { content: totalDaftarUlangSebelumnya, styles: { fontSize: 12, fillColor: [153, 255, 255], textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+    { content: totalDaftarUlangHariIni, styles: { fontSize: 12, fillColor: [153, 255, 255], textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+    { content: totalJumlahDaftarUlang, styles: { fontSize: 12, fillColor: [153, 255, 255], textColor: [0, 0, 0], halign: 'center', valign: 'middle' } },
+    { content: totalJumlahTidak, styles: { fontSize: 12, fillColor: [153, 255, 255], textColor: [0, 0, 0], halign: 'center', valign: 'middle' } }
+]);
 
-
-    // Membuat tabel dengan menggunakan plugin jsPDF Autotable
-    doc.autoTable({
-        head: tableData.slice(0, 2),
-        body: tableData.slice(2),
-        startY: 100,
-        styles: { fontSize: 7, lineWidth: 1.2, lineColor: [0, 0, 0], textColor: [0, 0, 0] },
-        theme: 'grid',
-        margin: { top: 20, right: 20, bottom: 50, left: 20 },
-        tableWidth: 'auto',
-        headerStyles: { fillColor: [255, 255, 255], fontStyle: 'bold' },
-    });
+doc.autoTable({
+    head: tableData.slice(0, 2),
+    body: tableData.slice(2),
+    startY: 100,
+    styles: { fontSize: 10, lineWidth: 0.5, lineColor: [0, 0, 0], textColor: [0, 0, 0],
+        halign: 'center', // Default horizontal alignment
+                valign: 'middle', // Default vertical alignment
+     },
+    theme: 'grid',
+    margin: { top: 20, right: 20, bottom: 50, left: 20 },
+    tableWidth: 'auto',
+    headerStyles: { fillColor: [255, 255, 255], fontStyle: 'bold',
+    halign: 'center', // Center align header text
+    valign: 'middle', // Middle align header text
+     },
+    
+});
 @endif
     // Mengunduh PDF
     doc.setFontSize(10);
-    const currentDate = new Date();
-    const formattedDate = currentDate.toLocaleDateString('en-US');
-    const formattedTime = currentDate.toLocaleTimeString('en-US');
-    const printDateTime = `Print Date: ${formattedDate} / Print Time: ${formattedTime}`;
-    doc.text(printDateTime, 50, doc.internal.pageSize.height - 20);
     const fileName = `Monitoring_PMB_${lokasiText}_${ta}_${formattedDate}.pdf`;
     doc.save(fileName);
 }

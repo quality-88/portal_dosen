@@ -183,7 +183,7 @@
                     
             if (selectedProdi) {
                 $.ajax({
-                    url: 'kurikulum/fetchFakultash',
+                    url: '/fetchFakultash',
                     method: 'GET',
                     data: { prodi: selectedProdi },
                     success: function (response) {

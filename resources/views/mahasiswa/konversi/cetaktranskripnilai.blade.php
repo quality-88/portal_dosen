@@ -152,7 +152,7 @@
     if (searchQuery.length >= 4) {
         // Lakukan permintaan AJAX ke server untuk mencari Mahasiswa
         $.ajax({
-            url: 'konversinilai/findMahasiswa',
+            url: '/findMahasiswa',
             method: 'GET',
             data: { term: searchQuery },
             success: function (data) {

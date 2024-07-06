@@ -14,7 +14,7 @@ class CheckDivisi
         $userId = session('user_id'); // Adjust based on your application's logic
 
         // Retrieve the user's division from the database
-        $userDivision = DB::table('allsmusersall')->where('id', $userId)->value('divisi');
+        $userDivision = DB::table('allsmusers')->where('id', $userId)->value('divisi');
 
         // Store the user's division in the session
         session(['user_division' => $userDivision]);

@@ -106,7 +106,7 @@
 
                 // Redirect to nilaikelas.blade.php with parameters
                 var url = "{{ route('nilaikelas') }}";
-                console.log('idKampus:', Lokasi);
+               
 // Assuming 'idDosen', 'idMK', 'kelas', 'idKampus', 'prodi', and 'tglUAS' are your parameters
 var parameters = {
     iddosen : iddosen,

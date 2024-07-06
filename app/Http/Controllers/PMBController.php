@@ -14,6 +14,11 @@ class PMBController extends Controller
 
     public function viewMonitoringPMB(Request $request)
     {
+        $request->validate([
+            'ta' => 'required|integer|min:2020',
+        ], [
+            'ta' => 'TA minimal dimulai dari tahun 2020.',
+        ]);
         $validated = $request->validate([
             'universitas' => 'required|string',
             'ta' => 'required|string',
@@ -28,9 +33,11 @@ class PMBController extends Controller
         //dd($endDateSql);
         if ($universitas === 'UQB') {
             $resultFakultas = DB::table('TblmonitoringPMBUQB')
-                ->select('idkampus', 'fakultas', 'singkatan', 'ProdiMaster', 'prodi')
-                ->orderBy('idPrimary', 'ASC')
-                ->get();
+            ->select('idkampus', 'fakultas', 'singkatan', 'ProdiMaster', 'prodi','urut')
+            ->whereIn('idkampus', ['11', '16']) // Tambahkan ini
+            ->orderBy('urut')
+            ->get();
+        
         } else {
             $resultFakultas = DB::table('TblmonitoringPMB')
                 ->select('idkampus', 'fakultas', 'singkatan', 'ProdiMaster', 'prodi')
@@ -93,7 +100,7 @@ class PMBController extends Controller
         'b.fakultas',
         'a.idkampus'
     )
-     ->whereDate('a.postingdate', '=', $endDateSql)
+    ->whereDate('a.postingdate', '=', $endDateSql)
     ->where('a.Universitas', '=', $universitas)
     ->where('a.ta', '=', $ta)
     ->where('a.posted', '=', 'y')
@@ -174,7 +181,7 @@ class PMBController extends Controller
             'b.fakultas',
             'a.idkampus'
         )
-        ->where('a.postingdate', '<', $endDateSql)
+        ->whereDate('a.postingdate', '<', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
         ->where('a.posted', '=', 'y')
@@ -281,7 +288,9 @@ class PMBController extends Controller
         ->whereDate('a.TGLLUNASPUMB', '=', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
+        ->where('a.posted','=','y')
         ->whereNotNull('a.NPM')
+        ->whereNotNull('a.tgllunaspumb')
         ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan','a.universitas')
         ->get();
         // /dd($resultPMBRegistrasiSebelumnya);
@@ -312,7 +321,7 @@ class PMBController extends Controller
         ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan')
         ->get();
         $mergedUlang = $UlangS1->merge($UlangS2);
-
+        //dd($mergedUlang);
         $UlangS1Sebelumnya =DB::table('PMBRegistrasi as a')
         ->join('fakultas as b', 'a.idfakultas', '=', 'b.idfakultas')
         ->select(
@@ -362,7 +371,9 @@ class PMBController extends Controller
         ->whereDate('a.TGLLUNASPUMB', '<', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
+        ->where('a.posted','=','y')
         ->whereNotNull('a.NPM')
+        ->whereNotNull('a.tgllunaspumb')
         ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan','a.universitas')
         ->get();
         //dd($resultPMBRegistrasiSebelumnya);
@@ -466,6 +477,8 @@ class PMBController extends Controller
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
         ->whereNull('a.NPM')
+        ->where('a.posted', '=', 'y')
+        ->whereNull('a.tgllunaspumb')
         ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan','a.universitas')
         ->get();
         //dd($TidakUlangS1);
@@ -487,10 +500,11 @@ class PMBController extends Controller
             'b.fakultas',
             'a.idkampus'
         )
-        ->where('a.TGLLUNASPMB', '=', $endDateSql)
+        ->whereDate('a.TGLLUNASPMB', '=', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
-        ->whereNotNull('a.NPM')
+        ->whereNull('a.NPM')
+        ->whereNull('a.tgllunaspumb')
         ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan')
         ->get();
         $mergedTidakUlang = $TidakUlangS1->merge($TidakUlangS2);
@@ -544,9 +558,18 @@ class PMBController extends Controller
         ->whereDate('a.postingdate', '<', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
-        ->whereNull('a.NPM')
+        ->where('a.posted', '=', 'y')
+        ->where(function ($query) use ($endDateSql) {
+            $query->whereDate('a.tgllunaspumb',  '>', [$endDateSql])
+                  ->orWhereNull('a.tgllunaspumb');
+        })
+        ->where(function ($query) use ($endDateSql) {
+            $query->whereDate('a.tgllunaspumb',  '>', [$endDateSql])
+                  ->orWhereNull('a.NPM');
+        })
         ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan','a.universitas')
         ->get();
+        //dd($TidakUlangSebelumnya);
         $TidakUlangS2Sebelumnya=DB::table('PMBRegistrasiS2 as a')
         ->join('fakultas as b', 'a.idfakultas', '=', 'b.idfakultas')
         ->select(
@@ -569,11 +592,12 @@ class PMBController extends Controller
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
         ->whereNull('a.NPM')
+        ->whereNull('a.tgllunaspumb')
         ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan')
         ->get();
         //dd($totalUlang,$mergedUlangSebelumnyaCount,$mergedUlangCount,$mergedUlangSebelumnya);
         $mergedTidakUlangSebelumnya = $TidakUlangSebelumnya->merge($TidakUlangS2Sebelumnya);
-        //dd($mergedTidakUlangSebelumnya);
+        //dd($TidakUlangSebelumnya);
 
         $mergedTidakUlangCount = $mergedTidakUlang->groupBy('prodi')->map(function ($item) {
             return $item->sum('Jumlah');
@@ -594,6 +618,9 @@ class PMBController extends Controller
             // Jika $item adalah array (berarti ini adalah koleksi jumlah per prodi)
             return collect($item)->sum();
         });
+
+        //$tidak = $totalUlang -$totalCounts;
+        //dd($tidak);
         $data = [
             'dafarhariini' => $mergedCount,
             'daftarsebelumnya' => $mergedSebelumnyaCount,
@@ -608,7 +635,7 @@ class PMBController extends Controller
             'endDate'=>$endDate,
         ];
         
-        //dd($data);
+        //dd($endDateSql,$totalUlang,$totalTidak);
         return view('pmb.cetakmonitoring', compact('universitas', 'ta', 'endDate', 'previousDay','data' ));
     }
 
@@ -622,73 +649,250 @@ public function showGrafikPMB (Request $request)
 
 public function viewGrafikPMB(Request $request)
 {
+    $request->validate([
+        'ta_awal' => 'required|integer|min:2020',
+        'ta_akhir' => 'required|integer|min:2021',
+    ], [
+        'ta_awal' => 'TA Awal minimal dimulai dari tahun 2020.',
+        'ta_akhir' => 'TA Akhir minimal dimulai dari tahun 2021.',
+    ]);
     $validated = $request->validate([
         'universitas' => 'required|string',
-        'ta_awal' => 'required|string',
-        'ta_akhir' => 'required|string',
+        'ta_awal' => 'required|integer',
+        'ta_akhir' => 'required|integer',
     ]);
 
     $universitas = $validated['universitas'];
     $ta_awal = $validated['ta_awal'];
     $ta_akhir = $validated['ta_akhir'];
 
-    $bulan = collect(range(1, 12))->map(function($month) {
-        return (object)['bulan' => $month];
-    });
-
-    $registrasi = DB::table('PMBRegistrasi')
-    ->selectRaw('ta, COUNT(npm) AS pendaftar, MONTH(tgldaftar) AS bulan')
-    ->where('universitas', $universitas)
-    ->whereBetween('ta', [$ta_awal, $ta_akhir]) // pastikan rentang tahun ta sesuai
-    ->whereYear('tgldaftar', '>=', $ta_awal) // tambahkan batasan tahun untuk tanggal daftar
-    ->whereYear('tgldaftar', '<=', $ta_akhir) 
-    ->groupBy('ta', DB::raw('MONTH(tgldaftar)'))
-    ->get();
-
-
-    $totalcalon = DB::table('PMBRegistrasi')
-        ->selectRaw('ta, COUNT(nopeserta) AS calon, MONTH(tgldaftar) AS bulan')
-        ->whereBetween('ta', [$ta_awal, $ta_akhir])
-        ->whereYear('tgldaftar', '>=', $ta_awal) // tambahkan batasan tahun untuk tanggal daftar
-        ->whereYear('tgldaftar', '<=', $ta_akhir) 
-        ->where('universitas', $universitas)
-        ->groupBy('ta', DB::raw('MONTH(tgldaftar)'))
-        ->get();
-//dd($registrasi);
-    $distinctTA = $registrasi->pluck('ta')->unique();
-    $ta_bulan_combinations = collect($distinctTA)->crossJoin($bulan);
-
-    $result = $ta_bulan_combinations->map(function ($item) use ($registrasi) {
-        $ta = $item[0];
-        $bulan = $item[1]->bulan;
-        $data = $registrasi->first(function ($value) use ($ta, $bulan) {
-            return $value->ta == $ta && $value->bulan == $bulan;
-        });
-
-        return (object)[
-            'ta' => $ta,
-            'bulan' => $bulan,
-            'pendaftar' => $data ? $data->pendaftar : 0
-        ];
-    })->sortBy(['ta', 'bulan']);
-
-    $calonResult = $ta_bulan_combinations->map(function ($item) use ($totalcalon) {
-        $ta = $item[0];
-        $bulan = $item[1]->bulan;
-        $data = $totalcalon->first(function ($value) use ($ta, $bulan) {
-            return $value->ta == $ta && $value->bulan == $bulan;
-        });
-
-        return (object)[
-            'ta' => $ta,
-            'bulan' => $bulan,
-            'calon' => $data ? $data->calon : 0
-        ];
-    })->sortBy(['ta', 'bulan']);
-
-    $resultArray = $result->toArray();
-    $calonArray = $calonResult->toArray();
-
+        $query2020 = "WITH WeeksAndMonths AS (
+                SELECT DISTINCT
+                    DATEPART(ISO_WEEK, date_seq) AS WeekNumber,
+                    DATEPART(MONTH, date_seq) AS MonthNumber
+                FROM (
+                    SELECT DATEADD(WEEK, number, '2020-01-01') AS date_seq
+                    FROM master..spt_values
+                    WHERE type = 'P' 
+                    AND number <= DATEDIFF(WEEK, '2020-01-01', '2020-12-31')
+                ) AS dates
+            ),
+            WeeklyCounts AS (
+                SELECT 
+                    COALESCE(COUNT(cm.nopeserta), 0) AS daftar,
+                    wm.WeekNumber,
+                    wm.MonthNumber
+                FROM 
+                    WeeksAndMonths wm
+                LEFT JOIN 
+                    calonmahasiswa cm ON DATEPART(ISO_WEEK, cm.tgldaftar) = wm.WeekNumber
+                                    AND DATEPART(MONTH, cm.tgldaftar) = wm.MonthNumber
+                                    AND YEAR(cm.tgldaftar) = 2020
+                                    AND cm.ta = '2020'
+                                    AND cm.universitas = :universitas
+                GROUP BY
+                    wm.WeekNumber,
+                    wm.MonthNumber
+            )
+            SELECT 
+                MonthNumber,
+                SUM(daftar) AS daftar
+            FROM 
+                WeeklyCounts
+            GROUP BY 
+                MonthNumber
+            ORDER BY 
+                MonthNumber ";
+    $results2020 = DB::select(DB::raw($query2020), ['universitas' => $universitas]);
+    //dd($results2020);
+    $query2020s = "WITH Months AS (
+        SELECT 1 AS MonthNumber
+        UNION ALL
+        SELECT MonthNumber + 1
+        FROM Months
+        WHERE MonthNumber < 12
+    )
+    SELECT Months.MonthNumber, COUNT(mahasiswa.npm) AS daftarulang
+    FROM mahasiswa
+    RIGHT JOIN Months ON DATEPART(month, mahasiswa.tglmasuk) = Months.MonthNumber
+    AND YEAR(mahasiswa.tglmasuk) = '2020'
+    AND mahasiswa.ta = '2020'
+    AND mahasiswa.universitas = :universitas
+    GROUP BY  YEAR(mahasiswa.tglmasuk),Months.MonthNumber
+    ORDER BY Months.MonthNumber";
+    $results2020s = DB::select(DB::raw($query2020s), ['universitas' => $universitas]);
+    //dd($results2020s);
+    //dd($results2020s);
+    $query2021 = "WITH Months AS (
+            SELECT 1 AS MonthNumber
+            UNION ALL
+            SELECT MonthNumber + 1
+            FROM Months
+            WHERE MonthNumber < 12
+        )
+        SELECT Months.MonthNumber, COUNT(calonmahasiswa.nopeserta) AS daftar
+        FROM calonmahasiswa
+        RIGHT JOIN Months ON DATEPART(month, calonmahasiswa.tgldaftar) = Months.MonthNumber
+        AND YEAR(calonmahasiswa.tgldaftar) = '2021'
+        AND calonmahasiswa.ta = '2021'
+        AND calonmahasiswa.universitas = :universitas
+        GROUP BY  YEAR(calonmahasiswa.tgldaftar),Months.MonthNumber
+        ORDER BY Months.MonthNumber";
+    $results2021 = DB::select(DB::raw($query2021), ['universitas' => $universitas]);
+    $query2021s = "WITH WeeksAndMonths AS (
+                SELECT DISTINCT
+                    DATEPART(ISO_WEEK, date_seq) AS WeekNumber,
+                    DATEPART(MONTH, date_seq) AS MonthNumber
+                FROM (
+                    SELECT DATEADD(WEEK, number, '2021-01-01') AS date_seq
+                    FROM master..spt_values
+                    WHERE type = 'P' 
+                    AND number <= DATEDIFF(WEEK, '2021-01-01', '2021-12-31')
+                ) AS dates
+            ),
+            WeeklyCounts AS (
+                SELECT 
+                    COALESCE(COUNT(cm.nopeserta), 0) AS daftarulang,
+                    wm.WeekNumber,
+                    wm.MonthNumber
+                FROM 
+                    WeeksAndMonths wm
+                LEFT JOIN 
+                    mahasiswa cm ON DATEPART(ISO_WEEK, cm.tglmasuk) = wm.WeekNumber
+                                    AND DATEPART(MONTH, cm.tglmasuk) = wm.MonthNumber
+                                    AND YEAR(cm.tglmasuk) = 2021
+                                    AND cm.ta = '2021'
+                                    AND cm.universitas = :universitas
+                GROUP BY
+                    wm.WeekNumber,
+                    wm.MonthNumber
+            )
+            SELECT 
+                MonthNumber,
+                SUM(daftarulang) AS daftarulang
+            FROM 
+                WeeklyCounts
+            GROUP BY 
+                MonthNumber
+            ORDER BY 
+                MonthNumber";
+    $results2021s = DB::select(DB::raw($query2021s), ['universitas' => $universitas]);
+    $query2022="WITH Months AS (
+            SELECT 1 AS MonthNumber
+            UNION ALL
+            SELECT MonthNumber + 1
+            FROM Months
+            WHERE MonthNumber < 12
+        )
+        SELECT 
+            Months.MonthNumber, 
+            COALESCE(pmb.daftarpmb, 0) + COALESCE(cm.daftarcm, 0) AS daftar
+        FROM Months
+        LEFT JOIN (
+            SELECT 
+                DATEPART(MONTH, pmb.tgldaftar) AS MonthNumber, 
+                COUNT(pmb.nopeserta) AS daftarpmb
+            FROM pmbregistrasi pmb
+            WHERE YEAR(pmb.tgldaftar) = '2022'
+                AND pmb.ta = '2022'
+                AND pmb.universitas = ?
+            GROUP BY DATEPART(MONTH, pmb.tgldaftar)
+        ) AS pmb ON Months.MonthNumber = pmb.MonthNumber
+        LEFT JOIN (
+            SELECT 
+                DATEPART(MONTH, cm.tgldaftar) AS MonthNumber, 
+                COUNT(cm.tgldaftar) AS daftarcm
+            FROM calonmahasiswa cm
+            WHERE YEAR(cm.tgldaftar) = '2022'
+                AND cm.ta = '2022'
+                AND cm.universitas = ?
+            GROUP BY DATEPART(MONTH, cm.tgldaftar)
+        ) AS cm ON Months.MonthNumber = cm.MonthNumber
+        ORDER BY Months.MonthNumber";
+    $results2022 = DB::select(DB::raw($query2022), [$universitas, $universitas]);
+    //dd($results2022);
+    $query2022s="WITH Months AS (
+        SELECT 1 AS MonthNumber
+        UNION ALL
+        SELECT MonthNumber + 1
+        FROM Months
+        WHERE MonthNumber < 12
+    )
+    SELECT Months.MonthNumber, COUNT(mahasiswa.npm) AS daftarulang
+    FROM mahasiswa
+    RIGHT JOIN Months ON DATEPART(month, mahasiswa.tglmasuk) = Months.MonthNumber
+    AND YEAR(mahasiswa.tglmasuk) = '2022'
+    AND mahasiswa.ta = '2022'
+    AND mahasiswa.universitas = :universitas
+    GROUP BY  YEAR(mahasiswa.tglmasuk),Months.MonthNumber
+    ORDER BY Months.MonthNumber";
+    $results2022s = DB::select(DB::raw($query2022s), ['universitas'=>  $universitas]);
+    $query2023 = "WITH Months AS (
+        SELECT 1 AS MonthNumber
+        UNION ALL
+        SELECT MonthNumber + 1
+        FROM Months
+        WHERE MonthNumber < 12
+    )
+    SELECT Months.MonthNumber, COUNT(pmbregistrasi.nopeserta) AS daftar
+    FROM pmbregistrasi
+    RIGHT JOIN Months ON DATEPART(month, pmbregistrasi.tgldaftar) = Months.MonthNumber
+    AND YEAR(pmbregistrasi.tgldaftar) = '2023'
+    AND pmbregistrasi.ta = '2023'
+    AND pmbregistrasi.universitas = :universitas
+    GROUP BY  ta,Months.MonthNumber
+    ORDER BY Months.MonthNumber";
+    $results2023 = DB::select(DB::raw($query2023), ['universitas' => $universitas]);
+    //dd($results2023);
+    $query2023s = "WITH Months AS (
+        SELECT 1 AS MonthNumber
+        UNION ALL
+        SELECT MonthNumber + 1
+        FROM Months
+        WHERE MonthNumber < 12
+    )
+    SELECT Months.MonthNumber, COUNT(mahasiswa.npm) AS daftarulang
+    FROM mahasiswa
+    RIGHT JOIN Months ON DATEPART(month, mahasiswa.tglmasuk) = Months.MonthNumber
+    AND YEAR(mahasiswa.tglmasuk) = '2023'
+    AND mahasiswa.ta = '2023'
+    AND mahasiswa.universitas = :universitas
+    GROUP BY  YEAR(mahasiswa.tglmasuk),Months.MonthNumber
+    ORDER BY Months.MonthNumber";
+    $results2023s = DB::select(DB::raw($query2023s), ['universitas' => $universitas]);
+    //dd($results2023s);
+    $query2024 = "WITH Months AS (
+        SELECT 1 AS MonthNumber
+        UNION ALL
+        SELECT MonthNumber + 1
+        FROM Months
+        WHERE MonthNumber < 12
+    )
+    SELECT Months.MonthNumber, COUNT(pmbregistrasi.nopeserta) AS daftar
+    FROM pmbregistrasi
+    RIGHT JOIN Months ON DATEPART(month, pmbregistrasi.postingdate) = Months.MonthNumber
+    AND YEAR(pmbregistrasi.postingdate) = '2024'
+    AND pmbregistrasi.ta = '2024'
+    AND pmbregistrasi.universitas = :universitas
+    GROUP BY  YEAR(pmbregistrasi.postingdate),Months.MonthNumber
+    ORDER BY Months.MonthNumber";
+    $results2024 = DB::select(DB::raw($query2024), ['universitas' => $universitas]);
+    $query2024s = "WITH Months AS (
+        SELECT 1 AS MonthNumber
+        UNION ALL
+        SELECT MonthNumber + 1
+        FROM Months
+        WHERE MonthNumber < 12
+    )
+    SELECT Months.MonthNumber, COUNT(pmbregistrasi.npm) AS daftarulang
+    FROM pmbregistrasi
+    RIGHT JOIN Months ON DATEPART(month, pmbregistrasi.tgllunaspumb) = Months.MonthNumber
+    AND YEAR(pmbregistrasi.tgllunaspumb) = '2024'
+    AND pmbregistrasi.ta = '2024'
+    AND pmbregistrasi.universitas = :universitas
+    GROUP BY  YEAR(pmbregistrasi.tgllunaspumb),Months.MonthNumber
+    ORDER BY Months.MonthNumber";
+    $results2024s = DB::select(DB::raw($query2024s), ['universitas' => $universitas]);
         $query1 = " WITH Weeks AS (
             SELECT 1 AS WeekNumber
             UNION ALL
@@ -705,7 +909,6 @@ public function viewGrafikPMB(Request $request)
         GROUP BY  YEAR(calonmahasiswa.tgldaftar),Weeks.WeekNumber
         ORDER BY Weeks.WeekNumber;
         ";
-
         // Execute the query and get the results
         $results1 = DB::select(DB::raw($query1), ['universitas' => $universitas]);
         //dd($results1);
@@ -783,23 +986,59 @@ public function viewGrafikPMB(Request $request)
 
         // Execute the query and get the results
         $results4 = DB::select(DB::raw($query4), ['universitas' => $universitas]);
-        //dd($results4);
+        $query9 = " WITH Weeks AS (
+            SELECT 1 AS WeekNumber
+            UNION ALL
+            SELECT WeekNumber + 1
+            FROM Weeks
+            WHERE WeekNumber < 53
+        )
+        SELECT 
+            Weeks.WeekNumber, 
+            COALESCE(pmb.daftarpmb, 0) + COALESCE(cm.daftarcm, 0) AS daftar
+        FROM Weeks
+        LEFT JOIN (
+            SELECT 
+                DATEPART(WEEK, pmb.postingdate) AS WeekNumber, 
+                COUNT(pmb.nopeserta) AS daftarpmb
+            FROM pmbregistrasi pmb
+            WHERE YEAR(pmb.postingdate) = '2024'
+                AND pmb.ta = '2024'
+                and pmb.posted='y'
+                AND pmb.universitas = ?
+            GROUP BY DATEPART(WEEK, pmb.postingdate)
+        ) AS pmb ON Weeks.WeekNumber = pmb.WeekNumber
+        LEFT JOIN (
+            SELECT 
+                DATEPART(WEEK, cm.tgllunaspmb) AS WeekNumber, 
+                COUNT(cm.tgllunaspmb) AS daftarcm
+            FROM pmbregistrasis2 cm
+            WHERE YEAR(cm.tgllunaspmb) = '2024'
+                AND cm.ta = '2024'
+                AND cm.universitas = ?
+            GROUP BY DATEPART(WEEK, cm.tgllunaspmb)
+        ) AS cm ON Weeks.WeekNumber = cm.WeekNumber
+        ORDER BY Weeks.WeekNumber";
+
+        // Execute the query and get the results
+        $results9 = DB::select(DB::raw($query9), [$universitas, $universitas]);
+        //dd($results9);
         $query5 = " WITH Weeks AS (
-                        SELECT 1 AS WeekNumber
-                        UNION ALL
-                        SELECT WeekNumber + 1
-                        FROM Weeks
-                        WHERE WeekNumber < 53
-                    )
-                    SELECT Weeks.WeekNumber, COUNT(mahasiswa.npm) AS daftarulang
-                    FROM mahasiswa
-                    RIGHT JOIN Weeks ON DATEPART(WEEK, mahasiswa.tglmasuk) = Weeks.WeekNumber
-                    AND YEAR(mahasiswa.tglmasuk) = '2020'
-                    AND mahasiswa.ta = '2020'
-                    AND mahasiswa.universitas = :universitas
-                    GROUP BY  YEAR(mahasiswa.tglmasuk),Weeks.WeekNumber
-                    ORDER BY Weeks.WeekNumber;
-                ";
+            SELECT 1 AS WeekNumber
+            UNION ALL
+            SELECT WeekNumber + 1
+            FROM Weeks
+            WHERE WeekNumber < 53
+        )
+        SELECT Weeks.WeekNumber, COUNT(mahasiswa.npm) AS daftarulang
+        FROM mahasiswa
+        RIGHT JOIN Weeks ON DATEPART(WEEK, mahasiswa.tglmasuk) = Weeks.WeekNumber
+        AND YEAR(mahasiswa.tglmasuk) = '2020'
+        AND mahasiswa.ta = '2020'
+        AND mahasiswa.universitas = :universitas
+        GROUP BY  YEAR(mahasiswa.tglmasuk),Weeks.WeekNumber
+        ORDER BY Weeks.WeekNumber;
+    ";
 
                 // Execute the query and get the results
                 $results5 = DB::select(DB::raw($query5), ['universitas' => $universitas]);
@@ -864,65 +1103,80 @@ public function viewGrafikPMB(Request $request)
 
         // Execute the query and get the results
         $results8 = DB::select(DB::raw($query8), ['universitas' => $universitas]);
+        $query10 = "WITH Weeks AS (
+            SELECT 1 AS WeekNumber
+            UNION ALL
+            SELECT WeekNumber + 1
+            FROM Weeks
+            WHERE WeekNumber < 53
+        )
+        SELECT 
+            Weeks.WeekNumber, 
+            COALESCE(pmb.daftarpmb, 0) + COALESCE(cm.daftarcm, 0) AS daftarulang
+        FROM Weeks
+        LEFT JOIN (
+            SELECT 
+                DATEPART(WEEK, pmb.tgllunaspumb) AS WeekNumber, 
+                COUNT(pmb.nopeserta) AS daftarpmb
+            FROM pmbregistrasi pmb
+            WHERE YEAR(pmb.tgllunaspumb) = '2024'
+                AND pmb.ta = '2024'
+                AND pmb.universitas = ?
+            GROUP BY DATEPART(WEEK, pmb.tgllunaspumb)
+        ) AS pmb ON Weeks.WeekNumber = pmb.WeekNumber
+        LEFT JOIN (
+            SELECT 
+                DATEPART(WEEK, cm.tgllunaspumb) AS WeekNumber, 
+                COUNT(cm.tgllunaspumb) AS daftarcm
+            FROM pmbregistrasis2 cm
+            WHERE YEAR(cm.tgllunaspumb) = '2024'
+                AND cm.ta = '2024'
+                AND cm.universitas = ?
+            GROUP BY DATEPART(WEEK, cm.tgllunaspumb)
+        ) AS cm ON Weeks.WeekNumber = cm.WeekNumber
+        ORDER BY Weeks.WeekNumber";
+
+      
+        // Execute the query and get the results
+        $results10 = DB::select(DB::raw($query10), [$universitas, $universitas]);
+        //dd($results10);
     // Calculate the differences
-$tidakdaftarulang_2020 = array_map(function($r1, $r5) {
-    return [
-        'WeekNumber' => $r1->WeekNumber,
-        'tidakdaftarulang' => $r1->daftar - $r5->daftarulang
-    ];
-}, $results1, $results5);
+        $tidakdaftarulang_2020 = array_map(function($r1, $r5) {
+            return [
+                'WeekNumber' => $r1->WeekNumber,
+                'tidakdaftarulang' => $r1->daftar - $r5->daftarulang
+            ];
+        }, $results1, $results5);
 
-$tidakdaftarulang_2021 = array_map(function($r2, $r6) {
-    return [
-        'WeekNumber' => $r2->WeekNumber,
-        'tidakdaftarulang' => $r2->daftar - $r6->daftarulang
-    ];
-}, $results2, $results6);
+        $tidakdaftarulang_2021 = array_map(function($r2, $r6) {
+            return [
+                'WeekNumber' => $r2->WeekNumber,
+                'tidakdaftarulang' => $r2->daftar - $r6->daftarulang
+            ];
+        }, $results2, $results6);
 
-// Combine the multiple queries for 2022 manually, assuming $results3 is a weekly data array
-$tidakdaftarulang_2022 = array_map(function($r3, $r7) {
-    return [
-        'WeekNumber' => $r3->WeekNumber,
-        'tidakdaftarulang' => $r3->daftar - $r7->daftarulang
-    ];
-}, $results3, $results7);
+        // Combine the multiple queries for 2022 manually, assuming $results3 is a weekly data array
+        $tidakdaftarulang_2022 = array_map(function($r3, $r7) {
+            return [
+                'WeekNumber' => $r3->WeekNumber,
+                'tidakdaftarulang' => $r3->daftar - $r7->daftarulang
+            ];
+        }, $results3, $results7);
 
 
-$tidakdaftarulang_2023 = array_map(function($r4, $r8) {
-    return [
-        'WeekNumber' => $r4->WeekNumber,
-        'tidakdaftarulang' => $r4->daftar - $r8->daftarulang
-    ];
-}, $results4, $results8);
+        $tidakdaftarulang_2023 = array_map(function($r4, $r8) {
+            return [
+                'WeekNumber' => $r4->WeekNumber,
+                'tidakdaftarulang' => $r4->daftar - $r8->daftarulang
+            ];
+        }, $results4, $results8);
 
-    // Helper function to map weeks to months
-    function weekToMonth($week) {
-        $week_to_month = [
-            1 => 1, 2 => 1, 3 => 1, 4 => 1,
-            5 => 2, 6 => 2, 7 => 2, 8 => 2, 9 => 2,
-            10 => 3, 11 => 3, 12 => 3, 13 => 3,
-            14 => 4, 15 => 4, 16 => 4, 17 => 4,
-            18 => 5, 19 => 5, 20 => 5, 21 => 5, 22 => 5,
-            23 => 6, 24 => 6, 25 => 6, 26 => 6,
-            27 => 7, 28 => 7, 29 => 7, 30 => 7, 31 => 7,
-            32 => 8, 33 => 8, 34 => 8, 35 => 8,
-            36 => 9, 37 => 9, 38 => 9, 39 => 9, 40 => 9,
-            41 => 10, 42 => 10, 43 => 10, 44 => 10,
-            45 => 11, 46 => 11, 47 => 11, 48 => 11,
-            49 => 12, 50 => 12, 51 => 12, 52 => 12, 53 => 12
-        ];
-        return $week_to_month[$week] ?? 12;
-    }
-
-    // Your existing queries...
-
-    $monthlyData = [
-        '2020' => $this->aggregateMonthlyData($results1, $results5),
-        '2021' => $this->aggregateMonthlyData($results2, $results6),
-        '2022' => $this->aggregateMonthlyData($results3, $results7),
-        '2023' => $this->aggregateMonthlyData($results4, $results8),
-    ];
-
+        $tidakdaftarulang_2024 = array_map(function($r9, $r10) {
+            return [
+                'WeekNumber' => $r9->WeekNumber,
+                'tidakdaftarulang' => $r9->daftar - $r10->daftarulang
+            ];
+        }, $results9, $results10);
     // Combine the data into a comprehensive array
     $data = [
         '2020' => [
@@ -956,37 +1210,162 @@ $tidakdaftarulang_2023 = array_map(function($r4, $r8) {
             'totaldaftar' => array_sum(array_column($results4, 'daftar')),
             'totaldaftarulang' => array_sum(array_column($results8, 'daftarulang')),
             'totaltidakdaftarulang' => array_sum(array_column($tidakdaftarulang_2023, 'tidakdaftarulang')),
+        ],
+        '2024' => [
+            'daftar' => $results9,
+            'daftarulang' => $results10,
+            'tidakdaftarulang' => $tidakdaftarulang_2024,
+            'totaldaftar' => array_sum(array_column($results9, 'daftar')),
+            'totaldaftarulang' => array_sum(array_column($results10, 'daftarulang')),
+            'totaltidakdaftarulang' => array_sum(array_column($tidakdaftarulang_2024, 'tidakdaftarulang')),
         ]
     ];
-
-    // Pass both weekly and monthly data to the view
-    return view('pmb.grafikmonitoring', compact('universitas', 'ta_awal', 'ta_akhir', 'data', 'monthlyData'));
-}
-private function aggregateMonthlyData($weeklyDaftar, $weeklyDaftarUlang)
-{
-    $monthlyDaftar = [];
-    $monthlyDaftarUlang = [];
-    foreach ($weeklyDaftar as $weekData) {
-        $month = date('n', strtotime("2020W" . str_pad($weekData->WeekNumber, 2, '0', STR_PAD_LEFT) . "1"));
-        if (!isset($monthlyDaftar[$month])) {
-            $monthlyDaftar[$month] = 0;
-        }
-        $monthlyDaftar[$month] += $weekData->daftar;
-    }
-    foreach ($weeklyDaftarUlang as $weekData) {
-        $month = date('n', strtotime("2020W" . str_pad($weekData->WeekNumber, 2, '0', STR_PAD_LEFT) . "1"));
-        if (!isset($monthlyDaftarUlang[$month])) {
-            $monthlyDaftarUlang[$month] = 0;
-        }
-        $monthlyDaftarUlang[$month] += $weekData->daftarulang;
-    }
-    return [
-        'daftar' => $monthlyDaftar,
-        'daftarulang' => $monthlyDaftarUlang,
-        'tidakdaftarulang' => array_map(function($month) use ($monthlyDaftar, $monthlyDaftarUlang) {
-            return $monthlyDaftar[$month] - $monthlyDaftarUlang[$month];
-        }, array_keys($monthlyDaftar))
+    $result = [
+        'results2020' => $results2020,
+        'results2021 ' => $results2021 ,
+        'results2022 ' => $results2022 ,
+        'results2023 ' => $results2023 ,
+        'results2024 ' => $results2024 ,
+        'results2020s ' => $results2020s ,
+        'results2021s ' => $results2021s ,
+        'results2022s ' => $results2022s ,
+        'results2023s ' => $results2023s ,
+        'results2024s ' => $results2024s ,
     ];
+    $months = [
+        'Januari' => range(1, 5),
+        'Februari' => range(6, 9),
+        'Maret' => range(10, 13),
+        'April' => range(14, 18),
+        'Mei' => range(19, 22),
+        'Juni' => range(23, 26),
+        'Juli' => range(27, 31),
+        'Agustus' => range(32, 35),
+        'September' => range(36, 40),
+        'Oktober' => range(41, 44),
+        'November' => range(45, 48),
+        'Desember' => range(49, 53)
+    ];
+
+    // Initialize total arrays for each year
+    $totalDaftar = [];
+    $totalDaftarUlang = [];
+    $totalTidakDaftarUlang = [];
+    foreach (range($ta_awal, $ta_akhir) as $year) {
+        $totalDaftar[$year] = [];
+        $totalDaftarUlang[$year] = [];
+        $totalTidakDaftarUlang[$year] = [];
+        foreach ($months as $month => $weeks) {
+            $totalDaftar[$year][$month] = 0;
+            $totalDaftarUlang[$year][$month] = 0;
+            $totalTidakDaftarUlang[$year][$month] = 0;
+        }
+    }
+
+    $showTotalYear = false; // Flag to show yearly total after "Di atas Desember"
+    
+    foreach ($months as $month => $weeks) {
+        foreach ($weeks as $week) {
+            foreach (range($ta_awal, $ta_akhir) as $year) {
+                $daftar = collect($data[$year]['daftar'])->firstWhere('WeekNumber', $week);
+                $daftarUlang = collect($data[$year]['daftarulang'])->firstWhere('WeekNumber', $week);
+                $tidakDaftarUlang = collect($data[$year]['tidakdaftarulang'])->firstWhere('WeekNumber', $week);
+
+                // Summing up totals with null check
+                $totalDaftar[$year][$month] += optional($daftar)->daftar ?? 0;
+                $totalDaftarUlang[$year][$month] += optional($daftarUlang)->daftarulang ?? 0;
+                $totalTidakDaftarUlang[$year][$month] += optional($tidakDaftarUlang)['tidakdaftarulang'] ?? 0;
+
+                // Set flag to show yearly total after "Di atas Desember"
+                if ($month == 'Desember' && !$showTotalYear) {
+                    $showTotalYear = true;
+                }
+            }
+        }
+    }
+    //dd($totalDaftar,$totalDaftarUlang);
+    // Pass both weekly and monthly data to the view
+    return view('pmb.grafikmonitoring', compact('universitas', 'ta_awal', 'ta_akhir','result',
+'results2020','results2021','results2022','results2023','results2020s','results2021s','results2022s','results2023s',
+'results2024s','results2024','months', 'data', 'totalDaftar', 'totalDaftarUlang', 'totalTidakDaftarUlang', 'showTotalYear',
+'daftar','daftarUlang','tidakDaftarUlang'));
+}
+public function showDataCalonMahasiswa()
+{
+    return view('pmb.datacalonmahasiswa');
+}
+public function ViewDataCalonMahasiswa(Request $request)
+{
+
+    $request->validate([
+        'ta' => 'required|integer|min:2023',
+        
+    ], [
+        'ta' => 'TA Awal minimal dimulai dari tahun 2023.',
+        
+    ]);
+    $validated = $request->validate([
+        'universitas' => 'required|string',
+        'ta' => 'required|integer',
+        
+    ]);
+
+    $universitas = $validated['universitas'];
+    $ta = $validated['ta'];
+    
+    // Execute the query
+    $results = DB::select(
+        "SELECT NOPESERTA, emailregis, nama, hp, alamatasal, ASALSMU
+        FROM pmbregistrasi
+        WHERE YEAR(postingdate) = ?
+        AND ta = ?
+        and posted ='y'
+        and nopeserta is not null
+        AND universitas = ?
+        order by ta",
+        [$ta, $ta, $universitas]
+    );
+
+    return view('pmb.datacalonmahasiswa',compact('results','ta','universitas'));
+
+}
+public function showDataCalonMahasiswaS2()
+{
+    return view('pmb.datacalonmahasiswas2');
+}
+public function ViewDataCalonMahasiswaS2(Request $request)
+{
+
+    $request->validate([
+        'ta' => 'required|integer|min:2024',
+        
+    ], [
+        'ta' => 'TA Awal minimal dimulai dari tahun 2024.',
+        
+    ]);
+    $validated = $request->validate([
+        'universitas' => 'required|string',
+        'ta' => 'required|integer',
+        
+    ]);
+
+    $universitas = $validated['universitas'];
+    $ta = $validated['ta'];
+    
+    // Execute the query
+    $results = DB::select(
+        "SELECT NOPESERTA, emailregis, nama, hp, alamatasal
+        FROM pmbregistrasis2
+        WHERE YEAR(tgllunaspmb) = ?
+        AND ta = ?
+        and nopeserta is not null
+        AND universitas = ?
+        order by ta",
+        [$ta, $ta, $universitas]
+    );
+
+    return view('pmb.datacalonmahasiswas2',compact('results','ta','universitas'));
+
 }
 }
 

@@ -346,44 +346,72 @@ public function cetakTranskripNilai(Request $request)
     session(['ta' => $ta]); 
     session(['npm' => $npm]);
     $urut=1;
-    $result1 = DB::table('krsdetail as b')
-    ->select(
-        'b.NPM',
-        'b.IDKAMPUS',
-        'b.PRODI',
-        'b.kurikulum',
-        'b.TA',
-        'b.SEMESTER',
-        'b.idmk',
-        'a.MATAKULIAH',
-        'b.SKS',
-        DB::raw('a.SEMESTER AS MatakuliahSemester'),
-        'b.NilaiAkhir',
-        DB::raw('CASE WHEN c.NilaiAngka IS NOT NULL THEN c.NilaiAngka * a.SKS ELSE 0 END AS kali'),
-        DB::raw("CONCAT(b.TA, b.SEMESTER) AS TASemester"),
-        'b.JumlahBobotNilai'
+    $result1 = DB::select("
+    WITH CTE AS (
+        SELECT 
+            b.NPM,
+            b.IDKAMPUS,
+            b.PRODI,
+            b.kurikulum,
+            b.TA,
+            b.SEMESTER,
+           MAX(b.idmk) AS idmk,
+            MAX(a.MATAKULIAH) AS MATAKULIAH,
+            b.SKS,
+            a.SEMESTER AS MatakuliahSemester,
+            b.NilaiAkhir,
+            CASE 
+                WHEN c.NilaiAngka IS NOT NULL THEN c.NilaiAngka * b.SKS 
+                ELSE 0 
+            END AS kali,
+            CONCAT(b.TA, b.SEMESTER) AS TASemester,
+            MAX(b.JumlahBobotNilai) AS JumlahBobotNilai, -- Menambahkan JumlahBobotNilai ke dalam fungsi agregat MAX()
+            ROW_NUMBER() OVER (PARTITION BY b.idmk ORDER BY c.NilaiAngka DESC) AS rn
+        FROM 
+            krsdetail AS b
+        JOIN 
+            matakuliah AS a ON b.IdMK = a.idmk
+        LEFT JOIN 
+            SettingNilai AS c ON c.NilaiHuruf = b.NilaiAkhir
+        WHERE 
+            b.npm = '$npm'
+        GROUP BY 
+            b.NPM,
+            b.IDKAMPUS,
+            b.PRODI,
+            b.kurikulum,
+            b.TA,
+            b.SEMESTER,
+            b.idmk,
+            b.SKS,
+            a.SEMESTER,
+            b.NilaiAkhir,
+            c.NilaiAngka,
+            CONCAT(b.TA, b.SEMESTER) -- Diperlukan karena digunakan dalam SELECT
     )
-    ->join('matakuliah as a', 'b.IdMK', '=', 'a.idmk')
-    ->leftJoin('SettingNilai as c', 'c.NilaiHuruf', '=', 'b.NilaiAkhir')
-    ->where('b.npm', $npm)
-    ->whereNotExists(function ($query) {
-        $query->select(DB::raw(1))
-            ->from('krsdetail as d')
-            ->join('matakuliah as e', 'd.IdMK', '=', 'e.idmk')
-            ->leftJoin('SettingNilai as f', 'f.NilaiHuruf', '=', 'd.NilaiAkhir')
-            ->whereRaw('d.npm = b.npm')
-            ->whereRaw('d.idmk = b.idmk')
-            ->where(function ($query) {
-                $query->whereRaw('f.NilaiAngka > c.NilaiAngka')
-                    ->orWhere(function ($query) {
-                        $query->whereNotNull('f.NilaiAngka')
-                            ->whereNull('c.NilaiAngka');
-                    });
-            });
-    })
-    ->orderBy('MatakuliahSemester', 'asc')
-    ->orderBy('b.NPM', 'asc')
-    ->get();
+    SELECT 
+        NPM,
+        IDKAMPUS,
+        PRODI,
+        kurikulum,
+        TA,
+        SEMESTER,
+        idmk,
+        MATAKULIAH,
+        SKS,
+        MatakuliahSemester,
+        NilaiAkhir,
+        kali,
+        TASemester,
+        JumlahBobotNilai
+    FROM 
+        CTE
+    WHERE 
+        rn = 1
+        order by semester
+");
+
+//dd($result1);
    //$result1 = DB::table('krsdetail as b')
    //->selectRaw('DISTINCT ROW_NUMBER() OVER (ORDER BY b.Npm) AS Urut')
    //->select('b.NPM', 'b.IDKAMPUS', 'b.PRODI', 'b.kurikulum', 'b.TA', 'b.SEMESTER', 'b.idmk', 'a.MATAKULIAH', 'b.SKS',
@@ -396,16 +424,22 @@ public function cetakTranskripNilai(Request $request)
    //->get();
     // Query kedua
     $result2 = DB::table('krsm as b')
-        ->selectRaw('ROW_NUMBER() OVER (ORDER BY b.NPM) AS Urut')
-        ->select('b.npm', 'b.IDKAMPUS', 'b.PRODI', 'b.kurikulum', 'b.TA', 'b.SEMESTER', 'b.idmk', 'a.MATAKULIAH', 'b.SKS',
-            'a.SEMESTER', 'b.NilaiAkhir', DB::raw('c.NilaiAngka * a.SKS AS kali'), DB::raw("CONCAT(b.TA, '1') as TASemester"),
-            'b.JumlahBobotNilai')
-        ->join('matakuliah as a', 'b.IdMK', '=', 'a.idmk')
-        ->join('settingnilai as c', 'c.nilaihuruf', '=', 'b.nilaiakhir')
-        ->where('b.npm',$npm)
-        ->whereNotNull('b.nilaiakhir')
-        ->orderBy('b.semester', 'asc')
-        ->get();
+    ->select('b.npm', 'b.IDKAMPUS', 'b.PRODI', 'b.kurikulum', 'b.TA', 'b.SEMESTER', 'b.idmk', 'a.MATAKULIAH', 'b.SKS',
+        'a.SEMESTER', 'b.NilaiAkhir', DB::raw('c.NilaiAngka * a.SKS AS kali'), DB::raw("CONCAT(b.TA, '1') as TASemester"),
+        'b.JumlahBobotNilai')
+    ->selectRaw('ROW_NUMBER() OVER (PARTITION BY b.idmk ORDER BY c.NilaiAngka DESC) AS rn') // Menambahkan window function
+    ->join('matakuliah as a', 'b.IdMK', '=', 'a.idmk')
+    ->join('settingnilai as c', 'c.nilaihuruf', '=', 'b.nilaiakhir')
+    ->where('b.npm', $npm)
+    ->whereNotNull('b.nilaiakhir')
+    ->orderBy('TASemester')
+    ->get();
+
+// Filter untuk hanya mempertahankan baris pertama (nilai tertinggi) dari setiap idmk
+$result2 = collect($result2)->filter(function ($item) {
+    return $item->rn == 1;
+})->values()->all();
+
         foreach ($result2 as $result) {
             $result->Urut = $urut; // Menambahkan nomor urut pada setiap baris
             $urut++; // Menaikkan nomor urut
@@ -431,10 +465,16 @@ public function cetakTranskripNilai(Request $request)
     ->where('prodimk.kurikulum', $kurikulum)
     ->where('prodimk.IDKAMPUS', $idKampus)
     ->where('prodimk.prodi',$prodi)
-    ->orderBy('prodimk.semester', 'asc')
+    ->orderBy('prodimk.semester')
+    ->distinct()
     ->get();
    
+// Convert $result1 to collection
+$result1 = collect($result1);
 
+// Convert $result2 to collection
+$result2 = collect($result2);
+//dd($result2);
     // Menyimpan mata kuliah yang tidak ada pada result1 dan result2
     $missingCourseData = [];
     foreach ($missingCourses as $course) {

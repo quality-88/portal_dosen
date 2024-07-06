@@ -28,7 +28,7 @@
   --bs-gray-700: #41516c;
   --bs-gray-800: #212a3a;
   --bs-gray-900: #060c17;
-  --bs-primary: #6571ff;
+  --bs-primary: #00FFFF;
   --bs-secondary: #7987a1;
   --bs-success: #05a34a;
   --bs-info: #66d1d1;
@@ -36,7 +36,7 @@
   --bs-danger: #ff3366;
   --bs-light: #e9ecef;
   --bs-dark: #060c17;
-  --bs-primary-rgb: 101, 113, 255;
+  --bs-primary-rgb: 0, 128, 255;
   --bs-secondary-rgb: 121, 135, 161;
   --bs-success-rgb: 5, 163, 74;
   --bs-info-rgb: 102, 209, 209;
@@ -3994,6 +3994,10 @@ div.tox .btn-group-vertical > .btn-group:not(:first-child) > .tox-button,
   background-color: transparent;
   border-color: transparent;
 }
+.nav-link.active {
+  color: blue !important; /* Pastikan untuk menambahkan !important jika ada konflik dengan CSS lainnya */
+}
+
 .nav-tabs .nav-link.active,
 .nav-tabs .nav-item.show .nav-link {
   color: var(--bs-nav-tabs-link-active-color);
@@ -6378,7 +6382,7 @@ div.tox .btn-group-vertical > .btn-group:not(:first-child) > .tox-button,
 
 .text-bg-primary {
   color: #fff !important;
-  background-color: RGBA(101, 113, 255, var(--bs-bg-opacity, 1)) !important;
+  background-color: RGBA(0, 255, 255, var(--bs-bg-opacity, 1)) !important;
 }
 
 .text-bg-secondary {

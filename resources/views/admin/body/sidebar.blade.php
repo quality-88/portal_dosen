@@ -82,6 +82,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('profilInput') }}">Edit Profil Dosen</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showPPD') }}">Rekap Dosen Aktif</a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -120,6 +123,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('formKaprodi') }}">Jabatan Rektorat</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showViewJabatan') }}">View Jabatan Rektorat</a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -151,40 +157,50 @@
             </li>
             @endif
 
-            <!-- Rekap Mahasiswa Section -->
-            @if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
+         <!-- Rekap Mahasiswa Section -->
+@if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
+<li class="nav-item">
+    <a class="nav-link" data-bs-toggle="collapse" href="#rekap" role="button" aria-expanded="false" aria-controls="rekap">
+        <i class="link-icon" data-feather="user"></i>
+        <span class="link-title">Rekap Mahasiswa</span>
+        <i class="link-arrow" data-feather="chevron-down"></i>
+    </a>
+    <div class="collapse" id="rekap">
+        <ul class="nav sub-menu">
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="collapse" href="#rekap" role="button" aria-expanded="false" aria-controls="rekap">
-                    <i class="link-icon" data-feather="user"></i>
-                    <span class="link-title">Rekap Mahasiswa</span>
-                    <i class="link-arrow" data-feather="chevron-down"></i>
-                </a>
-                <div class="collapse" id="rekap">
-                    <ul class="nav sub-menu">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showRekap') }}">Rekap Mahasiswa</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showRekapProdi') }}">Rekap Mahasiswa /Prodi</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showjlhMahasiswa') }}">Jumlah Mahasiswa </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showjlhMahasiswaProdi') }}">Jumlah Mahasiswa /Prodi</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showIPKLulusan') }}">IPK Lulusan </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showIPKProdi') }}">IPK Lulusan /Prodi</a>
-                        </li>
-                    </ul>
-                </div>
+                <a class="nav-link" href="{{ route('showRekap') }}">Rekap Mahasiswa</a>
             </li>
-            @endif
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showRekapProdi') }}">Rekap Mahasiswa /Prodi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('form.karyawan') }}">Rekap Mahasiswa Karyawan</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showjlhMahasiswa') }}">Jumlah Mahasiswa </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showjlhMahasiswaProdi') }}">Jumlah Mahasiswa /Prodi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showIPKLulusan') }}">IPK Lulusan </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showIPKPPRODI') }}">IPK Lulusan /Prodi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showIPKProdi') }}">Rincian Lulusan /Prodi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showIPKPPRODIRegular') }}">Rincian Regular /Prodi</a>
+            </li>
+        </ul>
+    </div>
+</li>
+@endif
 
             <!-- Mahasiswa Section -->
+            @if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
             <li class="nav-item nav-category">Mahasiswa</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#konversiNilai" role="button" aria-expanded="false" aria-controls="konversiNilai">
@@ -203,7 +219,7 @@
                     </ul>
                 </div>
             </li>
-
+            @endif
             <!-- Report Section -->
             @if(in_array($userDivision, ['Biro Akademik', 'Administrator','Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
             <li class="nav-item">
@@ -252,10 +268,17 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('showGrafikPMB') }}">Grafik PMB Monitoring</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showDataCalonMahasiswa') }}">Calon Mahasiswa S1</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showDataCalonMahasiswas2') }}">Calon Mahasiswa S1</a>
+                        </li>
                     </ul>
                 </div>
             </li>
             @endif
         </ul>
     </div>
+
 </nav>

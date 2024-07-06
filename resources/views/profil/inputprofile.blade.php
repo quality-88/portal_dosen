@@ -460,7 +460,7 @@
        if (searchQuery.length >= 4) {
            // Lakukan permintaan AJAX ke server untuk mencari Dosen
            $.ajax({
-               url: 'input/findDosen',
+               url: '/findDosen',
                method: 'GET',
                data: { term: searchQuery },
                success: function (data) {
