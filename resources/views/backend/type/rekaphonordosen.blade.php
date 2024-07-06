@@ -32,8 +32,8 @@
                             </select>
                         </div>
                         <div class="col-md-12">
-                            <button type="submit" class="btn btn-primary btn-lg float-end">Submit</button>   
-                        </div> 
+                            <button type="submit" class="btn btn-primary btn-lg float-end">Submit</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -45,15 +45,17 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row">
+                        <div class="mb-5">
                         <div class="col-md-6">
                             <button onclick="downloadPDF()" type="button" class="btn btn-primary btn-icon-text mb-2 mb-md-0">
                                 Download PDF
-                                <i class="btn-icon-prepend" data-feather="printer"></i>
+                               
                             </button>
                         </div>
                     </div>
+                </div>
                 <h4 class="mb-3">Rekap Honor SKS Dosen</h4>
-                <p>Tahun {{ $tahun }}, Bulan 
+                <p>Tahun {{ $tahun }}, Bulan
                     @php
                         $namaBulan = [
                             '01' => 'Januari',
@@ -89,7 +91,6 @@
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $j->id_dosen }}</td>
                                     <td>{{ $j->nama_dosen }}</td>
-                                    
                                     <td>{{ number_format(intval(floatval($j->TotalHonor)), 3, '.', '.') }}</td>
                                 </tr>
                             @endforeach
@@ -101,7 +102,6 @@
     </div>
     @endif
 </div>
-
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -117,7 +117,16 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    window.jsPDF = window.jspdf.jsPDF;
+window.jsPDF = window.jspdf.jsPDF;
+
+function getMonthName(monthNumber) {
+    const monthNames = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    return monthNames[monthNumber - 1];
+}
+
 function downloadPDF() {
     var doc = new jsPDF('l', 'pt', 'a4');
 
@@ -129,7 +138,7 @@ function downloadPDF() {
     doc.text('UNIVERSITAS QUALITY', 50, 20);
     doc.text('HONOR DOSEN MENGAJAR', 50, 60);
     doc.setFontSize(15);
-    doc.text(`Tahun: ${tahun}/${bulan}`, 50, 100);
+    doc.text(`Tahun: ${tahun}, Bulan: ${getMonthName(parseInt(bulan))}`, 50, 100);
 
     var data = [];
     var headers = ['No', 'ID Dosen', 'Nama', 'Total Honor'];
@@ -155,17 +164,19 @@ function downloadPDF() {
         startY: startY
     });
 
-    // Generate QR Codes
-    var qrYPosition = doc.previousAutoTable.finalY + 100;
+    // Add a new page for QR codes
+    doc.addPage();
+
+    var qrYPosition = 50; // Adjusted to fit within the new page margins
     var qrSize = 100;
     var qrMargin = 80;
-    
+
     var qrCodes = [
-        { id: 'idDavid', name: 'David Purba', color: '#FFFF', label: 'Disetujui Oleh' },
-        { id: 'idDedi', name: 'Dedi Simbolon', color: '#FFFF', label: 'Disetujui Oleh' },
-        { id: 'idHernyke', name: 'Hernyke', color: '#FFFF', label: 'Disusun Oleh' }
+        { id: 'idDavid', name: 'David Purba', color: '#000000', label: 'Disetujui Oleh' },
+        { id: 'idDedi', name: 'Dedi Simbolon', color: '#000000', label: 'Disetujui Oleh' },
+        { id: 'idHernyke', name: 'Hernyke', color: '#000000', label: 'Disusun Oleh' }
     ];
-    
+
     qrCodes.forEach(function(qr, index) {
         var qrXPosition = 50 + (index * (qrSize + qrMargin));
         QRCode.toDataURL(qr.id, { width: qrSize, height: qrSize }, function (err, url) {
@@ -178,13 +189,13 @@ function downloadPDF() {
                 if (qr.label) {
                     doc.text(qr.label, qrXPosition + qrSize / 2, qrYPosition - 10, null, null, 'center');
                 }
-                
+
                 doc.addImage(url, 'PNG', qrXPosition, qrYPosition, qrSize, qrSize);
-                
+
                 // Add name below the QR code
                 doc.setFontSize(12);
                 doc.text(qr.name, qrXPosition + qrSize / 2, qrYPosition + qrSize + 15, null, null, 'center');
-                
+
                 if (index === qrCodes.length - 1) {
                     const currentDate = new Date();
                     const formattedDate = currentDate.toLocaleDateString('en-US');
@@ -198,6 +209,5 @@ function downloadPDF() {
         });
     });
 }
-
 </script>
 @endsection

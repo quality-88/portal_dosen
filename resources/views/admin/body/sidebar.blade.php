@@ -68,7 +68,7 @@
             @endif
 
             <!-- Dosen Profil Section -->
-            @if(in_array($userDivision, ['Biro Akademik', 'Administrator','Yayasan','Sekretariat','Ka Biro Akademik']))
+            @if(in_array($userDivision, ['Biro Akademik', 'Administrator','Yayasan','Sekretariat','Ka Biro Akademik','Biro Keuangan']))
             <li class="nav-item nav-category">Dosen</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#profilDosen" role="button" aria-expanded="false" aria-controls="profilDosen">
@@ -82,13 +82,16 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('profilInput') }}">Edit Profil Dosen</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showPPD') }}">Rekap Dosen Aktif</a>
+                        </li>
                     </ul>
                 </div>
             </li>
             @endif
 
             <!-- CMS Section -->
-            @if($userDivision == 'Administrator')
+            @if(in_array($userDivision, ['Administrator','Sekretariat']))
             <li class="nav-item nav-category">CMS</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#cms" role="button" aria-expanded="false" aria-controls="cms">
@@ -119,6 +122,9 @@
                     <ul class="nav sub-menu">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('formKaprodi') }}">Jabatan Rektorat</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showViewJabatan') }}">View Jabatan Rektorat</a>
                         </li>
                     </ul>
                 </div>
@@ -177,14 +183,21 @@
                             <a class="nav-link" href="{{ route('showIPKLulusan') }}">IPK Lulusan </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showIPKProdi') }}">IPK Lulusan /Prodi</a>
+                            <a class="nav-link" href="{{ route('showIPKPPRODI') }}">IPK Lulusan /Prodi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showIPKProdi') }}">Rincian Lulusan /Prodi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showIPKPPRODIRegular') }}">Rincian Regular /Prodi</a>
                         </li>
                     </ul>
                 </div>
             </li>
-            @endif
+           @endif
 
             <!-- Mahasiswa Section -->
+            @if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
             <li class="nav-item nav-category">Mahasiswa</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#konversiNilai" role="button" aria-expanded="false" aria-controls="konversiNilai">
@@ -203,7 +216,7 @@
                     </ul>
                 </div>
             </li>
-
+            @endif
             <!-- Report Section -->
             @if(in_array($userDivision, ['Biro Akademik', 'Administrator','Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
             <li class="nav-item">
@@ -251,6 +264,12 @@
                         @endif
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('showGrafikPMB') }}">Grafik PMB Monitoring</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showDataCalonMahasiswa') }}">Calon Mahasiswa S1</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showDataCalonMahasiswas2') }}">Calon Mahasiswa S2</a>
                         </li>
                     </ul>
                 </div>

@@ -7,7 +7,7 @@
             <div class="card">
 
                 <div class="card-body">
-                    <h4 class="mb-0">Fungsionaris </h4>
+                    <h4 class="mb-0">Input Fungsionaris </h4>
                     <hr class="my-4">
                     <form class="row g-5" action="{{ route('insertJabatan') }}" method="POST" id="kaprodi" >
 
@@ -130,19 +130,19 @@
                     <!-- Manually initialize the datepicker -->
                     <style>
                    #resultList {
-  max-height: 200px; /* Set a maximum height for the list */
-  overflow-y: auto; /* Add a scrollbar when the list overflows */
-  position: absolute;
-  width: 40%; /* Make the list full-width */
-  z-index: 1000; /* Adjust the z-index to make sure the list appears above other elements */
-  background-color: #ffff; /* Set a background color */
-  border-radius: 5px; /* Optional: Add border-radius for rounded corners */
-}
+                    max-height: 200px; /* Set a maximum height for the list */
+                    overflow-y: auto; /* Add a scrollbar when the list overflows */
+                    position: absolute;
+                    width: 40%; /* Make the list full-width */
+                    z-index: 1000; /* Adjust the z-index to make sure the list appears above other elements */
+                    background-color: #ffff; /* Set a background color */
+                    border-radius: 5px; /* Optional: Add border-radius for rounded corners */
+                    }
 
-#resultList li {
-  padding: 8px; /* Add padding to each list item */
-  cursor: pointer; /* Change the cursor to a pointer for better user experience */
-}
+                    #resultList li {
+                    padding: 8px; /* Add padding to each list item */
+                    cursor: pointer; /* Change the cursor to a pointer for better user experience */
+                    }
                     </style>
                     <script>
                         

@@ -18,7 +18,7 @@
                     <h6 class="card-title">Data Table</h6>
                     
                     <div class="table-responsive">
-                        <table id="dataNilai" class="table table-striped">
+                        <table id="dataNilai" class="table">
                             <thead>
                                 <tr>
                                     <th>Lokasi</th>

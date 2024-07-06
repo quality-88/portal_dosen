@@ -36,7 +36,8 @@
                         </div>
                     </div>
                     <div class="col-md-12">
-                        <button type="submit" class="btn btn-primary btn-lg float-end">Submit</button>
+                        <button type="submit" class="btn btn-primary btn-lg float-end" id="submitButton"
+                            disabled>Submit</button>
                     </div>
                 </form>
             </div>
@@ -219,6 +220,8 @@ $(document).on('click', '#resultList li', function () {
             $('#tipeKelas').val(mahasiswa.tipekelas);
             $('#namaDosen').val(mahasiswa.NamaDosen);
             $('#alamat').val(mahasiswa.Alamat);
+
+            $('#submitButton').prop('disabled', false);
         },
         error: function (error) {
             console.error('Error fetching data:', error);

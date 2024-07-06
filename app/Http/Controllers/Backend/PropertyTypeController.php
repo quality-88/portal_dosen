@@ -229,11 +229,23 @@ public function searchDosen(Request $request)
  //       $nama_pdf = date('YmdHi') . '-DataKaryawan.pdf';
  //       return $pdf->download($nama_pdf);
  //   }
-     //public function AllType (){
+ public function showPPD()
+ {
+    return view('profil.detailprofiledosen');
+ }
+     public function detailProfileDosen (Request $request){
+        $ta = $request->input('ta');
+        $universitas = $request->input('universitas');
+        $dosen = DB::table('dosen as a')
+        ->join('attdosen as b', 'b.iddosen', '=', 'a.iddosen')
+        ->select('a.iddosen', 'a.nama', 'a.jabatanakademik','a.statusdosen','a.PRODITERDAFTAR',
+        'a.NOKTP','a.Kesehatan','a.Ketenagakerjaan','NPWP','Kepangkatan')
+        ->where('b.ta', $ta)
+        ->where('a.universitas', $universitas)
+        ->distinct()
+        ->orderBy('a.proditerdaftar')
+        ->get();
+        return view('profil.detailprofiledosen',compact('dosen','ta','universitas'));
 
-    //    $types = PropertyType::latest()->get();
-    //    $data = DB::table('dosen')->get();
-    //    return view('backend.type.all_type',compact('types','results'));
-
-    //}
+    }
      }

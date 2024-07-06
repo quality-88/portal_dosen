@@ -159,11 +159,13 @@ Route::group(['middleware' => 'auth'], function () {
   Route::post('input/hapushibah', [ProfilController::class,'deleteHibah'])->name('deleteHibah');
   Route::get('input/ubahhibah', [ProfilController::class,'ubahHibah'])->name('ubahHibah');
   Route::post('/edithibah', [ProfilController::class,'editHibah'])->name('editHibah');
-  
+  //Rekap Dosen Aktif
+  Route::get('/profiledosen', [PropertyTypeController::class, 'showPPD'])->name('showPPD');
+  Route::post('/profiledosen', [PropertyTypeController::class, 'detailProfileDosen'])->name('detail.keuangan');
    //Summary KRS
- Route::get('/summarykrs', [KrsMahasiswaController::class,'showSummary'])->name('showSummary');
- Route::post('/summarykrs', [KrsMahasiswaController::class,'SummaryKRS'])->name('SummaryKRS');
- Route::get('summarykrs/fetchFakultas', [PropertyTypeController::class, 'fetchFakultas'])->name('fetchFakultas');
+  Route::get('/summarykrs', [KrsMahasiswaController::class,'showSummary'])->name('showSummary');
+  Route::post('/summarykrs', [KrsMahasiswaController::class,'SummaryKRS'])->name('SummaryKRS');
+  Route::get('summarykrs/fetchFakultas', [PropertyTypeController::class, 'fetchFakultas'])->name('fetchFakultas');
   //Rincian KRS
   Route::get('/rinciankrs', [KrsMahasiswaController::class,'showRincian'])->name('showRincian');
   Route::post('/rinciankrs', [KrsMahasiswaController::class,'rincianKRS'])->name('rincianKRS');
@@ -228,9 +230,12 @@ Route::group(['middleware' => 'auth'], function () {
   Route::get('/ipklulusan', [AkreditasiController::class,'showIPKLulusan'])->name('showIPKLulusan');
   Route::post('/ipklulusan', [AkreditasiController::class,'IPKLulusan'])->name('IPKLulusan');
 //ipklulusan prodi
-Route::get('/ipkprodi', [AkreditasiController::class,'showIPKProdi'])->name('showIPKProdi');
-Route::post('/ipkprodi', [AkreditasiController::class,'HitungIPK'])->name('HitungIPK');
-
+    Route::get('/ipkprodi', [AkreditasiController::class,'showIPKProdi'])->name('showIPKProdi');
+    Route::post('/ipkprodi', [AkreditasiController::class,'HitungIPK'])->name('HitungIPK');
+    Route::get('/ipklulusanprodi', [AkreditasiController::class,'showIPKPPRODI'])->name('showIPKPPRODI');
+    Route::post('/ipklulusanprodi', [AkreditasiController::class,'IPKLulusanPPRODI'])->name('IPKLulusanPPRODI');
+    Route::get('/ipklulusankaryawanprodi', [AkreditasiController::class,'showIPKPPRODIRegular'])->name('showIPKPPRODIRegular');
+    Route::post('/ipklulusankaryawanprodi', [AkreditasiController::class,'IPKLulusanPPRODIRegular'])->name('IPKLulusanPPRODIRegular');
    //Jumlah Mahasiswa
    Route::get('/jlhmahasiswa', [AkreditasiController::class,'showjlhMahasiswa'])->name('showjlhMahasiswa');
    Route::post('/jlhmahasiswa', [AkreditasiController::class,'viewjlhMahasiswa'])->name('viewjlhMahasiswa');
@@ -249,6 +254,10 @@ Route::post('/ipkprodi', [AkreditasiController::class,'HitungIPK'])->name('Hitun
    Route::post('/monitoringpmb', [PMBController::class,'viewMonitoringPMB'])->name('viewMonitoringPMB');
    Route::get('/grafikpmb', [PMBController::class,'showGrafikPMB'])->name('showGrafikPMB');
     Route::post('/grafikpmb', [PMBController::class,'viewGrafikPMB'])->name('viewGrafikPMB');
+    Route::get('/datacalon', [PMBController::class,'showDataCalonMahasiswa'])->name('showDataCalonMahasiswa');
+    Route::post('/datacalon', [PMBController::class,'viewDataCalonMahasiswa'])->name('viewDataCalonMahasiswa');
+    Route::get('/datacalons2', [PMBController::class,'showDataCalonMahasiswas2'])->name('showDataCalonMahasiswas2');
+    Route::post('/datacalons2', [PMBController::class,'viewDataCalonMahasiswas2'])->name('viewDataCalonMahasiswas2');
 });
 
 

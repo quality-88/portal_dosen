@@ -337,78 +337,49 @@ class AkreditasiController extends Controller
     session(['ta_start' => $ta_start]);
     session(['ta_end' => $ta_end]);
     session(['tipekelas' => $tipeKelas]);
-    function buildQuery($status, $universitas, $ta_start, $ta_end, $tipeKelas) {
-        $query = DB::table('mahasiswa')
-            ->select(DB::raw('count(npm) as jumlah'), 'ta')
-            ->whereBetween('ta', [$ta_start, $ta_end])
-            ->where('universitas', $universitas)
-            ->groupBy('ta')
-            ->orderBY('TA');
-
-        if ($status === 'NULL') {
-            $query->whereNull('STATUSMHS')
-            ->whereNull('tgllulusmh');
-        } elseif ($status === 'LULUS') {
-            $query->where(function($query) {
-                $query->where('STATUSMHS', 'LULUS')
-                      ->orWhereNotNull('tgllulusmh');
-            });
-        } else {
-            $query->where('STATUSMHS', $status)
-                  ->whereNull('tgllulusmh');
-        }
-
-        if ($tipeKelas === 'BARU') {
-            $query->whereRaw("LEFT(tipekelas, 4) = 'BARU'");
-        } elseif ($tipeKelas === 'PINDAHAN REGULER') {
-            $query->where('tipekelas', 'PINDAHAN REGULER');
-        }
-
-        return $query->get();
-    }
-    // Fetch results for each status
-    $result = buildQuery('Aktif', $universitas, $ta_start, $ta_end, $tipeKelas);
-    $result1 = buildQuery('NULL', $universitas, $ta_start, $ta_end, $tipeKelas);
-    $result3 = buildQuery('DO', $universitas, $ta_start, $ta_end, $tipeKelas);
-    $result4 = buildQuery('Pindah', $universitas, $ta_start, $ta_end, $tipeKelas);
-    $result2 = buildQuery('LULUS', $universitas, $ta_start, $ta_end, $tipeKelas);
-       // Additional query to fetch the total number of students per 'ta'
-       $totalResult = DB::table('mahasiswa')
-       ->select(DB::raw('count(npm) as jumlah'), 'ta')
-       ->whereBetween('ta', [$ta_start, $ta_end])
-       ->where('universitas', $universitas)
-       ->groupBy('ta')
-       ->orderBy('ta');
-   if ($tipeKelas === 'BARU') {
-       $totalResult->whereRaw("LEFT(tipekelas, 4) = 'BARU'");
-   } elseif ($tipeKelas === 'PINDAHAN REGULER') {
-       $totalResult->where('tipekelas', 'PINDAHAN REGULER');
-   }
-
-   $totalResult = $totalResult->groupBy('ta')->get();
-   // Calculate total counts
-   $totalMahasiswa = $totalResult->sum('jumlah');
-   $totalAktif = $result->sum('jumlah');
-   $totalTidakAktif = $result1->sum('jumlah');
-   $totalDO = $result3->sum('jumlah');
-   $totalPindah = $result4->sum('jumlah');
-   $totalLulus = $result2->sum('jumlah');
-    $data = [
-        'result' => $result,
-        'result1' => $result1,
-        'result2' => $result2,
-        'results' => $totalResult,
-        'result3'=>$result3,
-        'result4'=>$result4,
-        'totalMahasiswa' => $totalMahasiswa,
-        'totalAktif' => $totalAktif,
-        'totalTidakAktif' => $totalTidakAktif,
-        'totalDO' => $totalDO,
-        'totalPindah' => $totalPindah,
-        'totalLulus' => $totalLulus,
-    ];
+    $results = DB::table('krsdetail AS A')
+    ->select(DB::raw("
+        CASE 
+            WHEN SUBSTRING(A.npm, 1, 2) = '14' THEN 'Angkatan 2014'
+            WHEN SUBSTRING(A.npm, 1, 2) = '15' THEN 'Angkatan 2015'
+            WHEN SUBSTRING(A.npm, 1, 2) = '16' THEN 'Angkatan 2016'
+            WHEN SUBSTRING(A.npm, 1, 2) = '17' THEN 'Angkatan 2017'
+            WHEN SUBSTRING(A.npm, 1, 2) = '18' THEN 'Angkatan 2018'
+            WHEN SUBSTRING(A.npm, 1, 2) = '19' THEN 'Angkatan 2019'
+            WHEN SUBSTRING(A.npm, 1, 2) = '20' THEN 'Angkatan 2020'
+            WHEN SUBSTRING(A.npm, 1, 2) = '21' THEN 'Angkatan 2021'
+            WHEN SUBSTRING(A.npm, 1, 2) = '22' THEN 'Angkatan 2022'
+            WHEN SUBSTRING(A.npm, 1, 2) = '23' THEN 'Angkatan 2023'
+            WHEN SUBSTRING(A.npm, 1, 2) = '24' THEN 'Angkatan 2024'
+            ELSE 'Angkatan Lain'
+        END AS Angkatan,
+        COUNT(DISTINCT A.npm) AS JumlahMahasiswa
+    "))
+    ->leftJoin('krs AS B', 'A.NPM', '=', 'B.NPM')
+    ->leftJoin('mahasiswa AS C', 'A.NPM', '=', 'C.NPM')
+    ->where('A.TA', $ta_start)
+    ->where('B.STATUSMHS', 'AKTIF')
+    ->where('C.TIPEKELAS', 'like', '%baru reguler%')
+    ->groupBy(DB::raw("
+        CASE 
+            WHEN SUBSTRING(A.npm, 1, 2) = '14' THEN 'Angkatan 2014'
+            WHEN SUBSTRING(A.npm, 1, 2) = '15' THEN 'Angkatan 2015'
+            WHEN SUBSTRING(A.npm, 1, 2) = '16' THEN 'Angkatan 2016'
+            WHEN SUBSTRING(A.npm, 1, 2) = '17' THEN 'Angkatan 2017'
+            WHEN SUBSTRING(A.npm, 1, 2) = '18' THEN 'Angkatan 2018'
+            WHEN SUBSTRING(A.npm, 1, 2) = '19' THEN 'Angkatan 2019'
+            WHEN SUBSTRING(A.npm, 1, 2) = '20' THEN 'Angkatan 2020'
+            WHEN SUBSTRING(A.npm, 1, 2) = '21' THEN 'Angkatan 2021'
+            WHEN SUBSTRING(A.npm, 1, 2) = '22' THEN 'Angkatan 2022'
+            WHEN SUBSTRING(A.npm, 1, 2) = '23' THEN 'Angkatan 2023'
+            WHEN SUBSTRING(A.npm, 1, 2) = '24' THEN 'Angkatan 2024'
+            ELSE 'Angkatan Lain'
+        END
+    "))
+    ->orderBy('Angkatan')
+    ->get();
     //dd($data);
-    return view('akreditasi.rekapmahasiswa',compact('data', 'ta_start','ta_end', 'universitas','tipeKelas'));
+    return view('akreditasi.rekapmahasiswa',compact('results', 'ta_start', 'universitas'));
    }
 //Rekap mahasiswa /Prodi
 public function showRekapProdi()
@@ -422,98 +393,139 @@ public function showRekapProdi()
     $universitas = $request->input('universitas');
     $prodi = $request->input('prodi');
     $ta_start = $request->input('ta_mulai');
-    $ta_end = $request->input('ta_akhir');
-    $tipeKelas = $request->input('tipekelas');
     
     session(['universitas' => $universitas]);
     session(['prodi' => $prodi]);
     session(['ta_start' => $ta_start]);
-    session(['ta_end' => $ta_end]);
-    session(['tipekelas' => $tipeKelas]);
 
-    function buildQueryProdi($status, $universitas, $prodi, $ta_start, $ta_end, $tipeKelas)
-    {
-        $query = DB::table('mahasiswa')
-            ->select(DB::raw('count(npm) as jumlah'), 'ta')
-            ->whereBetween('ta', [$ta_start, $ta_end])
-            ->where('universitas', $universitas)
-            ->where('prodi', $prodi)
-            ->groupBy('ta')
-            ->orderBy('ta');
-
-        if ($status === 'NULL') {
-            $query->whereNull('STATUSMHS')
-                ->whereNull('tgllulusmh');
-        } elseif ($status === 'LULUS') {
-            $query->where(function($query) {
-                $query->where('STATUSMHS', 'LULUS')
-                      ->orWhereNotNull('tgllulusmh');
-            });
-        } else {
-            $query->where('STATUSMHS', $status)
-                ->whereNull('tgllulusmh');
-        }
-
-        if ($tipeKelas === 'BARU') {
-            $query->whereRaw("LEFT(tipekelas, 4) = 'BARU'");
-        } elseif ($tipeKelas === 'PINDAHAN REGULER') {
-            $query->where('tipekelas', 'PINDAHAN REGULER');
-        }
-
-        return $query->get();
-    }
-
-    // Fetch results for each status
-    $result = buildQueryProdi('Aktif', $universitas, $prodi, $ta_start, $ta_end, $tipeKelas);
-    $result1 = buildQueryProdi('NULL', $universitas, $prodi, $ta_start, $ta_end, $tipeKelas);
-    $result3 = buildQueryProdi('DO', $universitas, $prodi, $ta_start, $ta_end, $tipeKelas);
-    $result4 = buildQueryProdi('Pindah', $universitas, $prodi, $ta_start, $ta_end, $tipeKelas);
-    $result2 = buildQueryProdi('LULUS', $universitas, $prodi, $ta_start, $ta_end, $tipeKelas);
-
-    // Additional query to fetch the total number of students per 'ta'
-    $totalResult = DB::table('mahasiswa')
-        ->select(DB::raw('count(npm) as jumlah'), 'ta')
-        ->whereBetween('ta', [$ta_start, $ta_end])
-        ->where('universitas', $universitas)
-        ->where('prodi', $prodi);
-
-    if ($tipeKelas === 'BARU') {
-        $totalResult->whereRaw("LEFT(tipekelas, 4) = 'BARU'");
-    } elseif ($tipeKelas === 'PINDAHAN REGULER') {
-        $totalResult->where('tipekelas', 'PINDAHAN REGULER');
-    }
-
-    $totalResult = $totalResult->groupBy('ta')->orderBy('ta')->get();
-
-    // Calculate total counts
-    $totalMahasiswa = $totalResult->sum('jumlah');
-    $totalAktif = $result->sum('jumlah');
-    $totalTidakAktif = $result1->sum('jumlah');
-    $totalDO = $result3->sum('jumlah');
-    $totalPindah = $result4->sum('jumlah');
-    $totalLulus = $result2->sum('jumlah');
-
-    $data = [
-        'result' => $result,
-        'result1' => $result1,
-        'result2' => $result2,
-        'results' => $totalResult,
-        'result3' => $result3,
-        'result4' => $result4,
-        'totalMahasiswa' => $totalMahasiswa,
-        'totalAktif' => $totalAktif,
-        'totalTidakAktif' => $totalTidakAktif,
-        'totalDO' => $totalDO,
-        'totalPindah' => $totalPindah,
-        'totalLulus' => $totalLulus,
-    ];
-
+    $results = DB::table('krsdetail AS A')
+    ->select(DB::raw("
+        CASE 
+            WHEN SUBSTRING(A.npm, 1, 2) = '14' THEN 'Angkatan 2014'
+            WHEN SUBSTRING(A.npm, 1, 2) = '15' THEN 'Angkatan 2015'
+            WHEN SUBSTRING(A.npm, 1, 2) = '16' THEN 'Angkatan 2016'
+            WHEN SUBSTRING(A.npm, 1, 2) = '17' THEN 'Angkatan 2017'
+            WHEN SUBSTRING(A.npm, 1, 2) = '18' THEN 'Angkatan 2018'
+            WHEN SUBSTRING(A.npm, 1, 2) = '19' THEN 'Angkatan 2019'
+            WHEN SUBSTRING(A.npm, 1, 2) = '20' THEN 'Angkatan 2020'
+            WHEN SUBSTRING(A.npm, 1, 2) = '21' THEN 'Angkatan 2021'
+            WHEN SUBSTRING(A.npm, 1, 2) = '22' THEN 'Angkatan 2022'
+            WHEN SUBSTRING(A.npm, 1, 2) = '23' THEN 'Angkatan 2023'
+            WHEN SUBSTRING(A.npm, 1, 2) = '24' THEN 'Angkatan 2024'
+            ELSE 'Angkatan Lain'
+        END AS Angkatan,
+        COUNT(DISTINCT A.npm) AS JumlahMahasiswa
+    "))
+    ->leftJoin('krs AS B', 'A.NPM', '=', 'B.NPM')
+    ->leftJoin('mahasiswa AS C', 'A.NPM', '=', 'C.NPM')
+    ->where('A.TA', $ta_start)
+    ->where('A.prodi', $prodi)
+    ->where('B.STATUSMHS', 'AKTIF')
+    ->where('C.TIPEKELAS', 'like', '%baru reguler%')
+    ->groupBy(DB::raw("
+        CASE 
+            WHEN SUBSTRING(A.npm, 1, 2) = '14' THEN 'Angkatan 2014'
+            WHEN SUBSTRING(A.npm, 1, 2) = '15' THEN 'Angkatan 2015'
+            WHEN SUBSTRING(A.npm, 1, 2) = '16' THEN 'Angkatan 2016'
+            WHEN SUBSTRING(A.npm, 1, 2) = '17' THEN 'Angkatan 2017'
+            WHEN SUBSTRING(A.npm, 1, 2) = '18' THEN 'Angkatan 2018'
+            WHEN SUBSTRING(A.npm, 1, 2) = '19' THEN 'Angkatan 2019'
+            WHEN SUBSTRING(A.npm, 1, 2) = '20' THEN 'Angkatan 2020'
+            WHEN SUBSTRING(A.npm, 1, 2) = '21' THEN 'Angkatan 2021'
+            WHEN SUBSTRING(A.npm, 1, 2) = '22' THEN 'Angkatan 2022'
+            WHEN SUBSTRING(A.npm, 1, 2) = '23' THEN 'Angkatan 2023'
+            WHEN SUBSTRING(A.npm, 1, 2) = '24' THEN 'Angkatan 2024'
+            ELSE 'Angkatan Lain'
+        END
+    "))
+    ->orderBy('Angkatan')
+    ->get();
     // Fetch prodi list for dropdown selection
     $prodis = DB::table('prodi')->select('idfakultas', 'prodi')->distinct()->get(); 
 
-    return view('akreditasi.rekapmahasiswaprodi', compact('data', 'ta_start', 'ta_end', 'universitas', 'prodis', 'prodi','tipeKelas'));
+    return view('akreditasi.rekapmahasiswaprodi', compact('results', 'ta_start', 'universitas', 'prodis', 'prodi'));
+}
+//Rekap mahasiswa karyawan /Prodi
+public function showRekapKaryawanProdi()
+   {
+    $prodis = DB::table('prodi')->select('idfakultas', 'prodi')->distinct()->get(); 
+    return view('akreditasi.rekapmahasiswakaryawan',compact('prodis'));
+   }
+
+   public function viewRekapKaryawanProdi(Request $request)
+{
+    $universitas = $request->input('universitas');
+    $prodi = $request->input('prodi');
+    $ta_start = $request->input('ta_mulai');
+    
+    session(['universitas' => $universitas]);
+    session(['prodi' => $prodi]);
+    session(['ta_start' => $ta_start]);
+
+    $results = DB::table('krsdetail AS A')
+    ->select(DB::raw("
+        CASE 
+            WHEN SUBSTRING(A.npm, 1, 2) = '14' THEN 'Angkatan 2014'
+            WHEN SUBSTRING(A.npm, 1, 2) = '15' THEN 'Angkatan 2015'
+            WHEN SUBSTRING(A.npm, 1, 2) = '16' THEN 'Angkatan 2016'
+            WHEN SUBSTRING(A.npm, 1, 2) = '17' THEN 'Angkatan 2017'
+            WHEN SUBSTRING(A.npm, 1, 2) = '18' THEN 'Angkatan 2018'
+            WHEN SUBSTRING(A.npm, 1, 2) = '19' THEN 'Angkatan 2019'
+            WHEN SUBSTRING(A.npm, 1, 2) = '20' THEN 'Angkatan 2020'
+            WHEN SUBSTRING(A.npm, 1, 2) = '21' THEN 'Angkatan 2021'
+            WHEN SUBSTRING(A.npm, 1, 2) = '22' THEN 'Angkatan 2022'
+            WHEN SUBSTRING(A.npm, 1, 2) = '23' THEN 'Angkatan 2023'
+            WHEN SUBSTRING(A.npm, 1, 2) = '24' THEN 'Angkatan 2024'
+            ELSE 'Angkatan Lain'
+        END AS Angkatan,
+        COUNT(DISTINCT A.npm) AS JumlahMahasiswa
+    "))
+    ->leftJoin('krs AS B', 'A.NPM', '=', 'B.NPM')
+    ->leftJoin('mahasiswa AS C', 'A.NPM', '=', 'C.NPM')
+    ->where('A.TA', $ta_start)
+    ->where('A.prodi', $prodi)
+    ->where('B.STATUSMHS', 'AKTIF')
+    ->where('C.TIPEKELAS', 'like', '%pindahan khusus%')
+    ->groupBy(DB::raw("
+        CASE 
+            WHEN SUBSTRING(A.npm, 1, 2) = '14' THEN 'Angkatan 2014'
+            WHEN SUBSTRING(A.npm, 1, 2) = '15' THEN 'Angkatan 2015'
+            WHEN SUBSTRING(A.npm, 1, 2) = '16' THEN 'Angkatan 2016'
+            WHEN SUBSTRING(A.npm, 1, 2) = '17' THEN 'Angkatan 2017'
+            WHEN SUBSTRING(A.npm, 1, 2) = '18' THEN 'Angkatan 2018'
+            WHEN SUBSTRING(A.npm, 1, 2) = '19' THEN 'Angkatan 2019'
+            WHEN SUBSTRING(A.npm, 1, 2) = '20' THEN 'Angkatan 2020'
+            WHEN SUBSTRING(A.npm, 1, 2) = '21' THEN 'Angkatan 2021'
+            WHEN SUBSTRING(A.npm, 1, 2) = '22' THEN 'Angkatan 2022'
+            WHEN SUBSTRING(A.npm, 1, 2) = '23' THEN 'Angkatan 2023'
+            WHEN SUBSTRING(A.npm, 1, 2) = '24' THEN 'Angkatan 2024'
+            ELSE 'Angkatan Lain'
+        END
+    "))
+    ->orderBy('Angkatan')
+    ->get();
+    // Fetch prodi list for dropdown selection
+    $prodis = DB::table('prodi')->select('idfakultas', 'prodi')->distinct()->get(); 
+
+    return view('akreditasi.rekapmahasiswakaryawan', compact('results', 'ta_start', 'universitas', 'prodis', 'prodi'));
 }
 
+public function detailKaryawanAktif (Request $request)
+{
+    $prodi = $request->input('prodi');
+    $ta = $request->input('ta');
+    $result = DB::table('krs as a')
+    ->distinct()
+    ->join('mahasiswa as b', 'b.npm', '=', 'a.npm')
+    ->select('a.npm', 'b.nama', 'b.hp')
+    ->where('a.STATUSMHS', 'aktif')
+    ->where('a.ta', $ta)
+    ->where('a.prodi', $prodi)
+    ->where('b.TIPEKELAS', 'pindahan khusus')
+    ->get();
+    //dd($result);
+    return view('akreditasi.detailkaryawan', compact('result'));
+}
    //IPK LULUSAN
    public function showIPKLulusan()
    {
@@ -667,7 +679,7 @@ public function HitungIPK(Request $request)
             ON krs.NPM = krsm.NPM
             LEFT JOIN mahasiswa mahasiswa1 ON krs.NPM = mahasiswa1.NPM
             LEFT JOIN mahasiswa mahasiswa2 ON krsm.NPM = mahasiswa2.NPM
-            ORDER BY COALESCE(krs.NPM, krsm.NPM) ASC
+            ORDER BY COALESCE(krs.NPM, krsm.NPM) ASC,IPK DESC
         "), [$universitas, $ta, $prodi, $universitas, $ta,$prodi]
     );
 
@@ -676,6 +688,198 @@ public function HitungIPK(Request $request)
     //dd($prodis);
     return view('akreditasi.ipklulusanprodi', compact('results', 'prodis', 'prodi', 'ta','universitas')); // Sertakan $prodis dalam compact()
 }
+public function showIPKPPRODI()
+   {
+    $prodis = DB::table('prodi')->select('idfakultas', 'prodi')->distinct()->get(); 
+    return view('akreditasi.ipklulusanpprodi',compact('prodis'));
+   }
 
+   public function IPKLulusanPPRODI(Request $request)
+   {
+       $universitas = $request->input('universitas');
+       $ta_start = $request->input('ta_mulai');
+       $ta_end = $request->input('ta_akhir');
+       $prodi = $request->input('prodi');
+       session(['universitas' => $universitas]);
+       session(['ta_start' => $ta_start]);
+       session(['ta_end' => $ta_end]);
+   
+       $results = DB::select("
+       SELECT 
+           TA,
+           MIN(IPK) AS Minimum_IPK,
+           AVG(IPK) AS Rata_rata_IPK,
+           MAX(IPK) AS Maksimum_IPK
+       FROM (
+           SELECT 
+               krs.TA AS TA,
+               COALESCE(krs.NPM, krsm.NPM) AS NPM,
+               COALESCE(krs.TotalNilai, 0) + COALESCE(krsm.TotalNilai, 0) AS TotalNilai,
+               COALESCE(krs.TotalSKS, 0) + COALESCE(krsm.TotalSKS, 0) AS TotalSKS,
+               (COALESCE(krs.TotalNilai, 0) + COALESCE(krsm.TotalNilai, 0)) / 
+                   NULLIF((COALESCE(krs.TotalSKS, 0) + COALESCE(krsm.TotalSKS, 0)), 0) AS IPK
+           FROM
+               (SELECT
+                   YEAR(d.tgllulusmh) AS TA,
+                   b.NPM,
+                   SUM(CASE WHEN c.NilaiAngka IS NOT NULL THEN c.NilaiAngka * a.SKS ELSE 0 END) AS TotalNilai,
+                   SUM(b.SKS) AS TotalSKS
+               FROM krsdetail AS b
+               JOIN matakuliah AS a ON b.IdMK = a.idmk
+               LEFT JOIN SettingNilai AS c ON c.NilaiHuruf = b.NilaiAkhir
+               LEFT JOIN mahasiswa d ON d.npm = b.npm
+               WHERE b.universitas = ? 
+               AND d.prodi = ?
+               AND YEAR(d.tgllulusmh) BETWEEN ? AND ?
+               AND d.StatusMahasiswa = 'lulus'
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM krsdetail AS d2
+                   JOIN matakuliah AS e ON d2.IdMK = e.idmk
+                   LEFT JOIN SettingNilai AS f ON f.NilaiHuruf = d2.NilaiAkhir
+                   WHERE d2.npm = b.npm
+                   AND d2.idmk = b.idmk
+                   AND (f.NilaiAngka > c.NilaiAngka OR (f.NilaiAngka IS NULL AND c.NilaiAngka IS NOT NULL))
+                   AND (f.NilaiAngka IS NOT NULL OR c.NilaiAngka IS NULL)
+               )
+               GROUP BY YEAR(d.tgllulusmh), b.NPM
+           ) AS krs
+           FULL OUTER JOIN
+           (
+               SELECT 
+                   YEAR(d.tgllulusmh) AS TA,
+                   b.NPM,
+                   SUM(c.NilaiAngka * a.SKS) AS TotalNilai,
+                   SUM(b.SKS) AS TotalSKS
+               FROM krsm AS b
+               JOIN matakuliah AS a ON b.IdMK = a.idmk
+               JOIN settingnilai AS c ON c.nilaihuruf = b.nilaiakhir
+               LEFT JOIN mahasiswa d ON d.npm = b.npm
+               WHERE b.universitas = ?
+               AND d.prodi = ?
+               AND d.statusmahasiswa = 'lulus'
+               AND b.nilaiakhir IS NOT NULL
+               AND YEAR(d.tgllulusmh) BETWEEN ? AND ?
+               GROUP BY YEAR(d.tgllulusmh), b.NPM
+           ) AS krsm ON krs.NPM = krsm.NPM AND krs.TA = krsm.TA
+       ) AS IPK_Results
+       GROUP BY TA
+   ", [
+       $universitas, $prodi, $ta_start, $ta_end,
+       $universitas, $prodi, $ta_start, $ta_end
+   ]);
+   
+       $total = DB::table('mahasiswa')
+           ->select(DB::raw('YEAR(tgllulusmh) as TA, count(npm) as jumlah'))
+           ->where('universitas', $universitas)
+           ->where('prodi', $prodi)
+           ->whereBetween(DB::raw('YEAR(tgllulusmh)'), [$ta_start, $ta_end])
+           ->groupBy(DB::raw('YEAR(tgllulusmh)'))
+           ->get();
+   
+       $data = [
+           'results' => $results,
+           'total' => $total,
+       ];
+       $prodis = DB::table('prodi')->select('idfakultas', 'prodi')->distinct()->get();
+       return view('akreditasi.ipklulusanpprodi', compact('data', 'ta_start', 'ta_end', 'universitas','prodis','prodi'));
+   }
+   public function showIPKPPRODIRegular()
+   {
+    $prodis = DB::table('prodi')->select('idfakultas', 'prodi')->distinct()->get(); 
+    return view('akreditasi.ipklulusanregulerprodi',compact('prodis'));
+   }
+   public function IPKLulusanPPRODIRegular(Request $request)
+   {
+       $universitas = $request->input('universitas');
+       $ta_start = $request->input('ta_mulai');
+       $ta_end = $request->input('ta_akhir');
+       $prodi = $request->input('prodi');
+       session(['universitas' => $universitas]);
+       session(['ta_start' => $ta_start]);
+       session(['ta_end' => $ta_end]);
+   
+       $results = DB::select("
+       SELECT 
+           TA,
+           MIN(IPK) AS Minimum_IPK,
+           AVG(IPK) AS Rata_rata_IPK,
+           MAX(IPK) AS Maksimum_IPK
+       FROM (
+           SELECT 
+               krs.TA AS TA,
+               COALESCE(krs.NPM, krsm.NPM) AS NPM,
+               COALESCE(krs.TotalNilai, 0) + COALESCE(krsm.TotalNilai, 0) AS TotalNilai,
+               COALESCE(krs.TotalSKS, 0) + COALESCE(krsm.TotalSKS, 0) AS TotalSKS,
+               (COALESCE(krs.TotalNilai, 0) + COALESCE(krsm.TotalNilai, 0)) / 
+                   NULLIF((COALESCE(krs.TotalSKS, 0) + COALESCE(krsm.TotalSKS, 0)), 0) AS IPK
+           FROM
+               (SELECT
+                   YEAR(d.tgllulusmh) AS TA,
+                   b.NPM,
+                   SUM(CASE WHEN c.NilaiAngka IS NOT NULL THEN c.NilaiAngka * a.SKS ELSE 0 END) AS TotalNilai,
+                   SUM(b.SKS) AS TotalSKS
+               FROM krsdetail AS b
+               JOIN matakuliah AS a ON b.IdMK = a.idmk
+               LEFT JOIN SettingNilai AS c ON c.NilaiHuruf = b.NilaiAkhir
+               LEFT JOIN mahasiswa d ON d.npm = b.npm
+               WHERE b.universitas = ? 
+               AND d.prodi = ?
+               AND YEAR(d.tgllulusmh) BETWEEN ? AND ?
+               AND d.StatusMahasiswa = 'lulus'
+               and d.tipekelas='BARU REGULER'
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM krsdetail AS d2
+                   JOIN matakuliah AS e ON d2.IdMK = e.idmk
+                   LEFT JOIN SettingNilai AS f ON f.NilaiHuruf = d2.NilaiAkhir
+                   WHERE d2.npm = b.npm
+                   AND d2.idmk = b.idmk
+                   AND (f.NilaiAngka > c.NilaiAngka OR (f.NilaiAngka IS NULL AND c.NilaiAngka IS NOT NULL))
+                   AND (f.NilaiAngka IS NOT NULL OR c.NilaiAngka IS NULL)
+               )
+               GROUP BY YEAR(d.tgllulusmh), b.NPM
+           ) AS krs
+           FULL OUTER JOIN
+           (
+               SELECT 
+                   YEAR(d.tgllulusmh) AS TA,
+                   b.NPM,
+                   SUM(c.NilaiAngka * a.SKS) AS TotalNilai,
+                   SUM(b.SKS) AS TotalSKS
+               FROM krsm AS b
+               JOIN matakuliah AS a ON b.IdMK = a.idmk
+               JOIN settingnilai AS c ON c.nilaihuruf = b.nilaiakhir
+               LEFT JOIN mahasiswa d ON d.npm = b.npm
+               WHERE b.universitas = ?
+               AND d.prodi = ?
+               AND d.statusmahasiswa = 'lulus'
+               and d.tipekelas='BARU REGULER'
+               AND b.nilaiakhir IS NOT NULL
+               AND YEAR(d.tgllulusmh) BETWEEN ? AND ?
+               GROUP BY YEAR(d.tgllulusmh), b.NPM
+           ) AS krsm ON krs.NPM = krsm.NPM AND krs.TA = krsm.TA
+       ) AS IPK_Results
+       GROUP BY TA
+   ", [
+       $universitas, $prodi, $ta_start, $ta_end,
+       $universitas, $prodi, $ta_start, $ta_end
+   ]);
+   
+       $total = DB::table('mahasiswa')
+           ->select(DB::raw('YEAR(tgllulusmh) as TA, count(npm) as jumlah'))
+           ->where('universitas', $universitas)
+           ->where('prodi', $prodi)
+           ->whereBetween(DB::raw('YEAR(tgllulusmh)'), [$ta_start, $ta_end])
+           ->groupBy(DB::raw('YEAR(tgllulusmh)'))
+           ->get();
+   
+       $data = [
+           'results' => $results,
+           'total' => $total,
+       ];
+       $prodis = DB::table('prodi')->select('idfakultas', 'prodi')->distinct()->get();
+       return view('akreditasi.ipklulusanregulerprodi', compact('data', 'ta_start', 'ta_end', 'universitas','prodis','prodi'));
+   }
 }
 
