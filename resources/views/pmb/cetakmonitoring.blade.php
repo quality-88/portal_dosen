@@ -48,6 +48,7 @@
         </div>
     </div>
     @if(isset($data) && count($data['fakultasData']) > 0)
+    
         <div class="row">
             <div class="col-md-12 grid-margin stretch-card">
                 <div class="card">
@@ -124,7 +125,7 @@
 
     function downloadPDF() {
         @if(isset($data) && count($data['fakultasData']) > 0)
-    var doc = new jsPDF('l', 'pt', 'a4');
+    var doc = new jsPDF('p', 'pt', 'a4');
     doc.setFontSize(15);
 
     var data = @json($data ?? null);
@@ -136,54 +137,57 @@
     const formattedDate = currentDate.toLocaleDateString('en-US');
     const formattedTime = currentDate.toLocaleTimeString('en-US');
     const printDateTime = `Print Date: ${formattedDate} / Print Time: ${formattedTime}`;
-    doc.setFontSize(10);
+    doc.setFontSize(7);
     doc.text(printDateTime, 50, 90);
     // Menambahkan teks informasi ke dokumen PDF
     doc.setFontSize(25);
     doc.setTextColor(0, 0, 0);
-    doc.text(`UNIVERSITAS QUALITY ${lokasiText}`, 230, 40);
-    doc.text(`PMB Monitoring ${ta}`, 310, 80);
+    doc.text(`UNIVERSITAS QUALITY ${lokasiText}`, 100, 40);
+    doc.text(`PMB Monitoring ${ta}`, 210, 80);
     // Menambahkan tanggal cetak di sini
 
     var tableData = [];
 
     // Header tambahan
     var additionalHeader = [
-    { content: 'No', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } },
-    { content: 'Fakultas', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } },
-    { content: 'Prodi', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } },
-    { content: 'Daftar', colSpan: 3, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } },
-    { content: 'Daftar Ulang', colSpan: 3, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } },
-    { content: 'Tidak Daftar Ulang', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold' } }
+    { content: 'No', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold',fontSize: 7 } },
+    { content: 'Fakultas', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold',fontSize: 7} },
+    { content: 'Prodi', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold',fontSize: 7 } },
+    { content: 'Daftar', colSpan: 3, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold',fontSize: 7 } },
+    { content: 'Daftar Ulang', colSpan: 3, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold',fontSize: 7 } },
+    { content: 'Tidak Daftar Ulang', colSpan: 1, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold',fontSize: 7 } }
 ];
 
     // Menambahkan header tambahan ke dalam data tabel
     tableData.push(additionalHeader);
 
     // Menambahkan header ke dalam data tabel
-    tableData.push(['', '', '',
-    `({{ date('d-m-Y', strtotime($endDate . ' -1 day')) }})`,
-    `({{ date('d-m-Y', strtotime($endDate)) }})`,
-    'Jumlah',
-    `({{ date('d-m-Y', strtotime($endDate . ' -1 day')) }})`,
-    `({{ date('d-m-Y', strtotime($endDate)) }})`,
-    'Jumlah',
-    `({{ date('d-m-Y', strtotime($endDate)) }})`
-    ]);
+    tableData.push([
+    { content: '', styles: { fontSize: 7 } },
+    { content: '', styles: { fontSize: 7 } },
+    { content: '', styles: { fontSize: 7 } },
+    { content: `({{ date('d-m-Y', strtotime($endDate . ' -1 day')) }})`, styles: { fontSize: 7 } },
+    { content: `({{ date('d-m-Y', strtotime($endDate)) }})`, styles: { fontSize: 7 } },
+    { content: 'Jumlah', styles: { fontSize: 7 } },
+    { content: `({{ date('d-m-Y', strtotime($endDate . ' -1 day')) }})`, styles: { fontSize: 7 } },
+    { content: `({{ date('d-m-Y', strtotime($endDate)) }})`, styles: { fontSize: 7 } },
+    { content: 'Jumlah', styles: { fontSize: 7 } },
+    { content: `({{ date('d-m-Y', strtotime($endDate)) }})`, styles: { fontSize: 7 } }
+]);
 
     // Menambahkan data ke dalam tabel
     data.fakultasData.forEach((fakultas, index) => {
         tableData.push([
-    { content: index + 1, styles: { halign: 'center', valign: 'middle',fontSize: 10 } },
-    { content: fakultas.fakultas, styles: { halign: 'center', valign: 'middle',fontSize: 10 } },
-    { content: fakultas.prodi, styles: { halign: 'center', valign: 'middle',fontSize: 10 } },
-    { content: data.daftarsebelumnya[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
-    { content: data.dafarhariini[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
-    { content: data.totalCounts[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
-    { content: data.daftarUlangsebelumnya[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
-    { content: data.dafarUlanghariini[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
-    { content: data.totalUlang[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 10 } },
-    { content: data.totalTidak[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle',fontSize: 10 } }
+    { content: index + 1, styles: { halign: 'center', valign: 'middle',fontSize: 7 } },
+    { content: fakultas.fakultas, styles: { halign: 'center', valign: 'middle',fontSize: 7 } },
+    { content: fakultas.prodi, styles: { halign: 'center', valign: 'middle',fontSize: 7 } },
+    { content: data.daftarsebelumnya[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 7 } },
+    { content: data.dafarhariini[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 7 } },
+    { content: data.totalCounts[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 7 } },
+    { content: data.daftarUlangsebelumnya[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 7 } },
+    { content: data.dafarUlanghariini[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 7 } },
+    { content: data.totalUlang[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle' ,fontSize: 7 } },
+    { content: data.totalTidak[fakultas.prodi] ?? 0, styles: { halign: 'center', valign: 'middle',fontSize: 7 } }
 ]);
 
 });
@@ -225,7 +229,7 @@ doc.autoTable({
     head: tableData.slice(0, 2),
     body: tableData.slice(2),
     startY: 100,
-    styles: { fontSize: 10, lineWidth: 0.5, lineColor: [0, 0, 0], textColor: [0, 0, 0],
+    styles: { fontSize: 5, lineWidth: 0.5, lineColor: [0, 0, 0], textColor: [0, 0, 0],
         halign: 'center', // Default horizontal alignment
                 valign: 'middle', // Default vertical alignment
      },

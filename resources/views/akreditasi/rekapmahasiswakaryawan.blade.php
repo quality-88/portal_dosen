@@ -73,7 +73,12 @@
 @endif
 
 </div>
-
+<style>
+    /* Tambahkan gaya kursor pointer saat mengarahkan kursor ke baris tabel */
+    #myExportableTable tbody tr:hover {
+        cursor: pointer;
+    }
+</style>
 <!-- Include the necessary scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>

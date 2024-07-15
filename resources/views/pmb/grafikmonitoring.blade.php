@@ -179,9 +179,9 @@ document.addEventListener('DOMContentLoaded', function() {
         var dataYearsDaftarUlang = Object.keys(dataDaftarUlang).filter(year => (parseInt(year) >= ta_awal && parseInt(year) <= ta_akhir));
 
         // Array warna yang berbeda untuk setiap dataset
-        var colorsDaftar = ['rgba(0,255,0, 0.2)', 'rgba(0,0,255, 0.2)', 'rgba(255,165,0, 0.2)', 'rgba(0,255,255, 0.2)',
+        var colorsDaftar = ['rgba(0,255,0, 0.2)', 'rgba(0,0,255, 0.2)', 'rgba(255,140,0, 0.2)', 'rgba(0,255,255, 0.2)',
         'rgba( 255,0,255, 0.2)'];
-        var colorsDaftarUlang = ['rgba(0,255,0, 0.2)', 'rgba(0,0,255, 0.2)', 'rgba(255,165,0, 0.2)', 'rgba(0,255,255, 0.2)',
+        var colorsDaftarUlang = ['rgba(0,255,0, 0.2)', 'rgba(0,0,255, 0.2)', 'rgba(255,140,0, 0.2)', 'rgba(0,255,255, 0.2)',
             'rgba(255,0,255,0.2)'
         ];
 
@@ -190,7 +190,8 @@ document.addEventListener('DOMContentLoaded', function() {
             data: Object.values(totalDaftar[year]),
             backgroundColor: colorsDaftar[index % colorsDaftar.length], // Pilih warna berdasarkan indeks
             borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1
+            borderWidth: 1,
+            barThickness: 20 // Atur lebar balok (dalam piksel)
         }));
 
         var chartDataDaftarUlang = dataYearsDaftarUlang.map((year, index) => ({
@@ -198,69 +199,82 @@ document.addEventListener('DOMContentLoaded', function() {
             data: Object.values(totalDaftarUlang[year]),
             backgroundColor: colorsDaftarUlang[index % colorsDaftarUlang.length], // Pilih warna berdasarkan indeks
             borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
+            borderWidth: 1,
+            barThickness: 20 // Atur lebar balok (dalam piksel)
         }));
+
         var ctxDaftar = document.getElementById('pmbChart').getContext('2d');
         var chartDaftar = new Chart(ctxDaftar, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: chartDataDaftar
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: chartDataDaftar
+        },
+        options: {
+            plugins: {
+                datalabels: {
+                    display: true,
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#000',
+                    font: {
+                        weight: 'bold'
+                    },
+                    formatter: function(value, context) {
+                        return Math.round(value);
+                    },
+                    padding: {
+                    top: -10 // Menggeser teks label ke atas
+                }
+                }
             },
-            options: {
-                plugins: {
-                    datalabels: {
-                        display: true,
-                        align: 'end',
-                        anchor: 'end',
-                        color: '#000', // warna teks
-                        font: {
-                            weight: 'bold'
-                        },
-                        formatter: function(value, context) {
-                            return Math.round(value); // menampilkan nilai sebagai angka bulat
-                        },
-                        padding: {
-                        top: -10  // Menggeser teks label ke atas
-                    }
-                    }
+            scales: {
+                x: {
+                    barPercentage: 0.8,
+                    categoryPercentage: 0.8
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+                y: {
+                    beginAtZero: true
                 }
             }
-        });
+        }
+    });
 
         var ctxDaftarUlang = document.getElementById('pmbChartDaftarUlang').getContext('2d');
         var chartDaftarUlang = new Chart(ctxDaftarUlang, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: chartDataDaftarUlang
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: chartDataDaftarUlang
+        },
+        options: {
+            plugins: {
+                datalabels: {
+                    display: true,
+                    align: 'end',
+                    anchor: 'end',
+                    color: '#000',
+                    font: {
+                        weight: 'bold'
+                    },
+                    formatter: function(value, context) {
+                        return Math.round(value);
+                    },
+                    padding: {
+                    top: -10 // Menggeser teks label ke atas
+                }
+                }
             },
-            options: {
-                plugins: {
-                    datalabels: {
-                        display: true,
-                        align: 'end',
-                        anchor: 'end',
-                        color: '#000', // warna teks
-                        font: {
-                            weight: 'bold'
-                        },
-                        formatter: function(value, context) {
-                            return Math.round(value); // menampilkan nilai sebagai angka bulat
-                        }
-                    }
+            scales: {
+                x: {
+                    barPercentage: 0.8,
+                    categoryPercentage: 0.8
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+                y: {
+                    beginAtZero: true
                 }
             }
+        }
         });
     }
 
@@ -268,12 +282,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var totalDaftarUlang = {!! json_encode($totalDaftarUlang) !!};
 
     createCombinedBarCharts(labels, totalDaftar, totalDaftarUlang);
+    
+    
     function createPDF() {
     var doc = new jsPDF('p', 'pt', 'a4');
     doc.setTextColor(0, 0, 255);
 
     // Calculate page width
     var pageWidth = doc.internal.pageSize.getWidth();
+    var pageHeight = doc.internal.pageSize.getHeight();
     var universitas = "{{ session('universitas') }}";
     var lokasiText = "{{ $universitas === 'UQM' ? 'MEDAN' : ($universitas === 'UQB' ? 'BERASTAGI' : '') }}";
     var ta_awal = {{$ta_awal}};
@@ -289,6 +306,11 @@ document.addEventListener('DOMContentLoaded', function() {
     doc.setFontSize(10);
     doc.text(`UNIVERSITAS QUALITY ${lokasiText}`, 220, 60);
 
+    // Get the number of columns in the table
+    var columns = document.querySelectorAll('#grafikpmb thead th').length;
+    var tableWidth = pageWidth + 50; // Adjusting for margins
+    var columnWidth = tableWidth / columns;
+
     doc.autoTable({
         html: '#grafikpmb',
         startY: 100,
@@ -301,15 +323,18 @@ document.addEventListener('DOMContentLoaded', function() {
             valign: 'middle',
             fillColor: [100, 149, 237], // Background color for non-header cells
             textColor: [0, 0, 0], // Default text color (black)
+            lineWidth: 3, // Width of table border lines
+            columnWidth: columnWidth, // Set column width
         },
         headStyles: {
-            fillColor: [100, 149, 237], // Background color for header cells
+            fillColor: [0, 168, 107], // Background color for header cells
             textColor: [255, 255, 255], // Text color for header cells (white)
-            fontStyle: 'bold', // Bold font for header cells
+            fontSize: 8, // Font size for header cells
+            minCellHeight: 20, // Set the minimum cell height for header cells
         },
-        tableWidth: 'auto',
-        columnWidth: 'auto',
-        rowHeight: 20,
+        bodyStyles: {
+            minCellHeight: 10, // Set the minimum cell height for body cells
+        },
         didDrawCell: function (data) {
             var rowsToHighlight = [5, 10, 15, 21, 26, 31, 37, 42, 48, 53, 58, 64, 65];
             var rowIndex = data.row.index; // Index starts at 0, so add 1
@@ -318,18 +343,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 doc.setFillColor(0, 168, 107); // Set header background color to green
                 doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
                 doc.setTextColor(255); // Set header text color to white
+                doc.setFontSize(8); // Adjust the font size as needed
             } else {
                 if (rowIndex === 65) {
                     doc.setFillColor(0, 168, 107); // Set background color for row 65 (same as header)
                     doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
                     doc.setTextColor(255); // Set text color for row 65
-                    doc.setFontSize(10); // Adjust the font size as needed
+                    doc.setFontSize(11); // Adjust the font size as needed
                 } else {
                     if (rowsToHighlight.includes(rowIndex)) {
                         doc.setFillColor(100, 149, 237); // Background color for highlighted rows
                         doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
-                        doc.setTextColor(255);
-                        doc.setFontSize(9); // Set text color to white for highlighted rows
+                        doc.setTextColor(255); // Set text color to white for highlighted rows
+                        doc.setFontSize(10);
                     } else {
                         doc.setFillColor(255); // Default background color (white)
                         doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
@@ -341,11 +367,11 @@ document.addEventListener('DOMContentLoaded', function() {
             var cellText = data.cell.text ?? '';
 
             var textPosX = data.cell.x + data.cell.width / 2;
-            var textPosY = data.cell.y + data.cell.height / 2;
+            var textPosY = data.cell.y + (data.cell.height / 2) + (data.section === 'head' ? -3 : 0); // Adjust text position for header
             doc.text(cellText, textPosX, textPosY, { align: 'center', valign: 'middle' });
 
             if (rowIndex === 65) {
-                doc.setFontSize(10); // Reset to default font size after drawing row 65
+                doc.setFontSize(14); // Reset to default font size after drawing row 65
             }
         }
     });
@@ -353,11 +379,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add charts
     html2canvas(document.querySelector("#pmbChart"), { dpi: 300, scale: 2 }).then(canvas => {
         var imgData = canvas.toDataURL('image/png');
-        doc.addPage();
+
+        // Add first landscape page (page 2)
+        doc.addPage('a4', 'landscape');
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(12);
-        doc.text(`Grafik Pendaftaran Mahasiswa Baru Universitas Quality ${lokasiText} (${ta_awal} - ${ta_akhir})`, 10, 90);
-        doc.addImage(imgData, 'PNG', 10, 140, pageWidth - 20, 500);
+        doc.text(`Grafik Pendaftaran Mahasiswa Baru Universitas Quality ${lokasiText} (${ta_awal} - ${ta_akhir})`, 10, 40);
+         doc.addImage(imgData, 'PNG', 60, 120, pageWidth + 100, 400);
 
         const currentDate = new Date();
         const formattedDate = currentDate.toLocaleDateString('en-US');
@@ -365,21 +393,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const printDateTime = `Print Date: ${formattedDate} / Print Time: ${formattedTime}`;
         doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
-        doc.text(printDateTime, 10, 720);
-
+        doc.text(printDateTime, 10, pageHeight - 20);
         html2canvas(document.querySelector("#pmbChartDaftarUlang"), { dpi: 300, scale: 2 }).then(canvas => {
             var imgData = canvas.toDataURL('image/png');
-            doc.addPage();
+
+            // Add second landscape page (page 4)
+            doc.addPage('a4', 'landscape');
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(12);
-            doc.text(`Grafik Pendaftaran Ulang Mahasiswa Baru Universitas Quality ${lokasiText} (${ta_awal} - ${ta_akhir})`, 10, 90);
-            doc.addImage(imgData, 'PNG', 10, 140, pageWidth - 20, 500);
+            doc.text(`Grafik Pendaftaran Ulang Mahasiswa Baru Universitas Quality ${lokasiText} (${ta_awal} - ${ta_akhir})`, 10, 40);
+             doc.addImage(imgData, 'PNG', 60, 120, pageWidth + 100, 400);
 
             doc.setFontSize(10);
             doc.setTextColor(100, 100, 100);
-            doc.text(printDateTime, 10, 720);
+            doc.text(printDateTime, 10, pageHeight - 20);
 
-            // Total number of pages
             const totalPages = doc.internal.getNumberOfPages();
 
             // Add page numbers to each page
@@ -390,15 +418,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 doc.setTextColor(100, 100, 100);
                 doc.text(pageNumberText, pageWidth / 2, doc.internal.pageSize.getHeight() - 30, { align: 'center' });
             }
-
             // Save the PDF
             doc.save(`Grafik_Monitoring_PMB-${lokasiText}_${ta_awal} - ${ta_akhir}_${formattedDate}.pdf`);
         });
     });
 }
 
-
-    document.getElementById('generatePDF').addEventListener('click', function() {
+  document.getElementById('generatePDF').addEventListener('click', function() {
         createPDF();
     });
 @endif

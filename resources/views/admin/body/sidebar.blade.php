@@ -18,7 +18,7 @@
             <!-- Dashboard -->
             <li class="nav-item">
                 <a href="{{ route('dashboard') }}" class="nav-link">
-                    <i class="link-icon" data-feather="box"></i>
+                    <i class="link-icon" data-feather="home"></i>
                     <span class="link-title">Dashboard</span>
                 </a>
             </li>
@@ -28,7 +28,7 @@
             <li class="nav-item nav-category">Keuangan</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#keuangan" role="button" aria-expanded="false" aria-controls="keuangan">
-                    <i class="link-icon" data-feather="users"></i>
+                    <i class="link-icon" data-feather="dollar-sign"></i>
                     <span class="link-title">Dosen</span>
                     <i class="link-arrow" data-feather="chevron-down"></i>
                 </a>
@@ -53,7 +53,7 @@
             <li class="nav-item nav-category">Kurikulum</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#kurikulum" role="button" aria-expanded="false" aria-controls="kurikulum">
-                    <i class="link-icon" data-feather="hash"></i>
+                    <i class="link-icon" data-feather="book"></i>
                     <span class="link-title">Kurikulum Prodi</span>
                     <i class="link-arrow" data-feather="chevron-down"></i>
                 </a>
@@ -68,11 +68,11 @@
             @endif
 
             <!-- Dosen Profil Section -->
-            @if(in_array($userDivision, ['Biro Akademik', 'Administrator','Yayasan','Sekretariat','Ka Biro Akademik','Biro Keuangan']))
+            @if(in_array($userDivision, ['Biro Akademik', 'Administrator','Yayasan','Sekretariat','Ka Biro Akademik']))
             <li class="nav-item nav-category">Dosen</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#profilDosen" role="button" aria-expanded="false" aria-controls="profilDosen">
-                    <i class="link-icon" data-feather="hash"></i>
+                    <i class="link-icon" data-feather="book-open"></i>
                     <span class="link-title">Profil</span>
                     <i class="link-arrow" data-feather="chevron-down"></i>
                 </a>
@@ -91,7 +91,7 @@
             @endif
 
             <!-- CMS Section -->
-            @if(in_array($userDivision, ['Administrator','Sekretariat']))
+            @if($userDivision == 'Administrator')
             <li class="nav-item nav-category">CMS</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#cms" role="button" aria-expanded="false" aria-controls="cms">
@@ -157,51 +157,83 @@
             </li>
             @endif
 
-            <!-- Rekap Mahasiswa Section -->
-            @if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
+         <!-- Rekap Mahasiswa Section -->
+@if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
+<li class="nav-item">
+    <a class="nav-link" data-bs-toggle="collapse" href="#rekap" role="button" aria-expanded="false" aria-controls="rekap">
+        <i class="link-icon" data-feather="clipboard"></i>
+        <span class="link-title">Rekap Mahasiswa</span>
+        <i class="link-arrow" data-feather="chevron-down"></i>
+    </a>
+    <div class="collapse" id="rekap">
+        <ul class="nav sub-menu">
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="collapse" href="#rekap" role="button" aria-expanded="false" aria-controls="rekap">
-                    <i class="link-icon" data-feather="user"></i>
-                    <span class="link-title">Rekap Mahasiswa</span>
-                    <i class="link-arrow" data-feather="chevron-down"></i>
-                </a>
-                <div class="collapse" id="rekap">
-                    <ul class="nav sub-menu">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showRekap') }}">Rekap Mahasiswa</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showRekapProdi') }}">Rekap Mahasiswa /Prodi</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showjlhMahasiswa') }}">Jumlah Mahasiswa </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showjlhMahasiswaProdi') }}">Jumlah Mahasiswa /Prodi</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showIPKLulusan') }}">IPK Lulusan </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showIPKPPRODI') }}">IPK Lulusan /Prodi</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showIPKProdi') }}">Rincian Lulusan /Prodi</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showIPKPPRODIRegular') }}">Rincian Regular /Prodi</a>
-                        </li>
-                    </ul>
-                </div>
+                <a class="nav-link" href="{{ route('showRekap') }}">Rekap Mahasiswa</a>
             </li>
-           @endif
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showRekapProdi') }}">Rekap Mahasiswa /Prodi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('form.karyawan') }}">Rekap Mahasiswa Karyawan</a>
+            </li>
+           
+        </ul>
+    </div>
+</li>
+@endif
+@if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
+<li class="nav-item">
+    <a class="nav-link" data-bs-toggle="collapse" href="#jumlah" role="button" aria-expanded="false" aria-controls="jumlah">
+        <i class="link-icon" data-feather="book"></i>
+        <span class="link-title">Jumlah Mahasiswa</span>
+        <i class="link-arrow" data-feather="chevron-down"></i>
+    </a>
+    <div class="collapse" id="jumlah">
+        <ul class="nav sub-menu">
+            
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showjlhMahasiswa') }}">Jumlah Mahasiswa /Lokasi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showjlhMahasiswaProdi') }}">Jumlah Mahasiswa /Prodi</a>
+            </li>
+           
+        </ul>
+    </div>
+</li>
+@endif
+@if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
+<li class="nav-item">
+    <a class="nav-link" data-bs-toggle="collapse" href="#lulusan" role="button" aria-expanded="false" aria-controls="lulusan">
+        <i class="link-icon" data-feather="archive"></i>
+        <span class="link-title">Lulusan</span>
+        <i class="link-arrow" data-feather="chevron-down"></i>
+    </a>
+    <div class="collapse" id="lulusan">
+        <ul class="nav sub-menu">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showIPKLulusan') }}">IPK Lulusan </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showIPKPPRODI') }}">IPK Lulusan /Prodi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showIPKProdi') }}">Rincian Lulusan /Prodi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('showIPKPPRODIRegular') }}">Rincian Regular /Prodi</a>
+            </li>
+        </ul>
+    </div>
+</li>
+@endif
 
             <!-- Mahasiswa Section -->
             @if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
             <li class="nav-item nav-category">Mahasiswa</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#konversiNilai" role="button" aria-expanded="false" aria-controls="konversiNilai">
-                    <i class="link-icon" data-feather="users"></i>
+                    <i class="link-icon" data-feather="folder-plus"></i>
                     <span class="link-title">Konversi Nilai</span>
                     <i class="link-arrow" data-feather="chevron-down"></i>
                 </a>
@@ -221,7 +253,7 @@
             @if(in_array($userDivision, ['Biro Akademik', 'Administrator','Ka Biro Akademik','Fungsionaris UQ','Yayasan']))
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#report" role="button" aria-expanded="false" aria-controls="report">
-                    <i class="link-icon" data-feather="hash"></i>
+                    <i class="link-icon" data-feather="printer"></i>
                     <span class="link-title">Report</span>
                     <i class="link-arrow" data-feather="chevron-down"></i>
                 </a>
@@ -250,7 +282,7 @@
             <li class="nav-item nav-category">PMB</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#pmb" role="button" aria-expanded="false" aria-controls="pmb">
-                    <i class="link-icon" data-feather="file-text"></i>
+                    <i class="link-icon" data-feather="bar-chart"></i>
                     <span class="link-title">PMB</span>
                     <i class="link-arrow" data-feather="chevron-down"></i>
                 </a>
@@ -277,4 +309,5 @@
             @endif
         </ul>
     </div>
+
 </nav>

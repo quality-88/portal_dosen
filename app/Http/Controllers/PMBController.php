@@ -126,7 +126,7 @@ class PMBController extends Controller
             'b.fakultas',
             'a.idkampus'
         )
-        ->where('a.TGLLUNASPMB', '=', $endDateSql)
+        ->whereDate('a.TGLLUNASPMB', '=', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
         ->whereNotNull('a.NOPESERTA')
@@ -207,7 +207,7 @@ class PMBController extends Controller
             'b.fakultas',
             'a.idkampus'
         )
-        ->where('a.TGLLUNASPMB', '<', $endDateSql)
+        ->whereDate('a.TGLLUNASPMB', '<', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
         ->whereNotNull('a.NOPESERTA')

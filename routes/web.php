@@ -236,6 +236,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/ipklulusanprodi', [AkreditasiController::class,'IPKLulusanPPRODI'])->name('IPKLulusanPPRODI');
     Route::get('/ipklulusankaryawanprodi', [AkreditasiController::class,'showIPKPPRODIRegular'])->name('showIPKPPRODIRegular');
     Route::post('/ipklulusankaryawanprodi', [AkreditasiController::class,'IPKLulusanPPRODIRegular'])->name('IPKLulusanPPRODIRegular');
+    Route::get('/rekapmahasiswakaryawan', [AkreditasiController::class,'showRekapKaryawanProdi'])->name('form.karyawan');
+    Route::post('/rekapmahasiswakaryawan', [AkreditasiController::class,'viewRekapKaryawanProdi'])->name('view.karyawan');
+    Route::get('/detailmahasiswakaryawan', [AkreditasiController::class,'detailKaryawanAktif'])->name('detail.karyawan');
    //Jumlah Mahasiswa
    Route::get('/jlhmahasiswa', [AkreditasiController::class,'showjlhMahasiswa'])->name('showjlhMahasiswa');
    Route::post('/jlhmahasiswa', [AkreditasiController::class,'viewjlhMahasiswa'])->name('viewjlhMahasiswa');

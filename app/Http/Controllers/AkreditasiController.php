@@ -815,7 +815,7 @@ public function showIPKPPRODI()
                    NULLIF((COALESCE(krs.TotalSKS, 0) + COALESCE(krsm.TotalSKS, 0)), 0) AS IPK
            FROM
                (SELECT
-                   YEAR(d.tgllulusmh) AS TA,
+                   d.stambuk as TA,
                    b.NPM,
                    SUM(CASE WHEN c.NilaiAngka IS NOT NULL THEN c.NilaiAngka * a.SKS ELSE 0 END) AS TotalNilai,
                    SUM(b.SKS) AS TotalSKS
@@ -825,7 +825,7 @@ public function showIPKPPRODI()
                LEFT JOIN mahasiswa d ON d.npm = b.npm
                WHERE b.universitas = ? 
                AND d.prodi = ?
-               AND YEAR(d.tgllulusmh) BETWEEN ? AND ?
+               AND d.stambuk BETWEEN ? AND ?
                AND d.StatusMahasiswa = 'lulus'
                and d.tipekelas='BARU REGULER'
                AND NOT EXISTS (
@@ -838,12 +838,12 @@ public function showIPKPPRODI()
                    AND (f.NilaiAngka > c.NilaiAngka OR (f.NilaiAngka IS NULL AND c.NilaiAngka IS NOT NULL))
                    AND (f.NilaiAngka IS NOT NULL OR c.NilaiAngka IS NULL)
                )
-               GROUP BY YEAR(d.tgllulusmh), b.NPM
+               GROUP BY d.stambuk, b.NPM
            ) AS krs
            FULL OUTER JOIN
            (
                SELECT 
-                   YEAR(d.tgllulusmh) AS TA,
+                   d.stambuk as TA,
                    b.NPM,
                    SUM(c.NilaiAngka * a.SKS) AS TotalNilai,
                    SUM(b.SKS) AS TotalSKS
@@ -856,8 +856,8 @@ public function showIPKPPRODI()
                AND d.statusmahasiswa = 'lulus'
                and d.tipekelas='BARU REGULER'
                AND b.nilaiakhir IS NOT NULL
-               AND YEAR(d.tgllulusmh) BETWEEN ? AND ?
-               GROUP BY YEAR(d.tgllulusmh), b.NPM
+               AND d.stambuk BETWEEN ? AND ?
+               GROUP BY d.stambuk, b.NPM
            ) AS krsm ON krs.NPM = krsm.NPM AND krs.TA = krsm.TA
        ) AS IPK_Results
        GROUP BY TA
@@ -867,17 +867,18 @@ public function showIPKPPRODI()
    ]);
    
        $total = DB::table('mahasiswa')
-           ->select(DB::raw('YEAR(tgllulusmh) as TA, count(npm) as jumlah'))
+           ->select(DB::raw('stambuk as TA, count(npm) as jumlah'))
            ->where('universitas', $universitas)
            ->where('prodi', $prodi)
-           ->whereBetween(DB::raw('YEAR(tgllulusmh)'), [$ta_start, $ta_end])
-           ->groupBy(DB::raw('YEAR(tgllulusmh)'))
+           ->whereBetween(('stambuk'), [$ta_start, $ta_end])
+           ->groupBy('stambuk')
            ->get();
    
        $data = [
            'results' => $results,
            'total' => $total,
        ];
+       //dd($results);
        $prodis = DB::table('prodi')->select('idfakultas', 'prodi')->distinct()->get();
        return view('akreditasi.ipklulusanregulerprodi', compact('data', 'ta_start', 'ta_end', 'universitas','prodis','prodi'));
    }

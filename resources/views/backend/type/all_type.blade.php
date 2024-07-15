@@ -465,6 +465,7 @@ function downloadPDF() {
         doc.autoTable({
             body: tableData.table,
             startY: 100,
+            theme: 'grid',
             margin: { top: 60 },
             tableWidth: 'auto',
             styles: {

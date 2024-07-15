@@ -117,97 +117,107 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-window.jsPDF = window.jspdf.jsPDF;
-
-function getMonthName(monthNumber) {
-    const monthNames = [
-        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-    ];
-    return monthNames[monthNumber - 1];
-}
-
-function downloadPDF() {
-    var doc = new jsPDF('l', 'pt', 'a4');
-
-    doc.setFontSize(15);
-    var tahun = "{{ session('tahun') }}";
-    var bulan = "{{ session('bulan') }}";
-
-    doc.setFontSize(20);
-    doc.text('UNIVERSITAS QUALITY', 50, 20);
-    doc.text('HONOR DOSEN MENGAJAR', 50, 60);
-    doc.setFontSize(15);
-    doc.text(`Tahun: ${tahun}, Bulan: ${getMonthName(parseInt(bulan))}`, 50, 100);
-
-    var data = [];
-    var headers = ['No', 'ID Dosen', 'Nama', 'Total Honor'];
-    @if(isset($totalHonor) && $totalHonor->isNotEmpty())
-        @foreach ($totalHonor as $index => $j)
-        var TotalHonor = ({{ $j->TotalHonor * 1000 }}).toLocaleString('id-ID');
-        data.push([
-            {{ $index + 1 }},
-            '{{ $j->id_dosen }}',
-            '{{ $j->nama_dosen }}',
-            TotalHonor
-        ]);
-        @endforeach
-        var total = "{{ $total }}";
-        var total = Number("{{ $total * 1000 }}").toLocaleString('id-ID');
-        data.push(["", "", "Total", total]);
-
-    @endif
-    var startY = 140;
-    doc.autoTable({
-        head: [headers],
-        body: data,
-        startY: startY
-    });
-
-    // Add a new page for QR codes
-    doc.addPage();
-
-    var qrYPosition = 50; // Adjusted to fit within the new page margins
-    var qrSize = 100;
-    var qrMargin = 80;
-
-    var qrCodes = [
-        { id: 'idDavid', name: 'David Purba', color: '#000000', label: 'Disetujui Oleh' },
-        { id: 'idDedi', name: 'Dedi Simbolon', color: '#000000', label: 'Disetujui Oleh' },
-        { id: 'idHernyke', name: 'Hernyke', color: '#000000', label: 'Disusun Oleh' }
-    ];
-
-    qrCodes.forEach(function(qr, index) {
-        var qrXPosition = 50 + (index * (qrSize + qrMargin));
-        QRCode.toDataURL(qr.id, { width: qrSize, height: qrSize }, function (err, url) {
-            if (err) {
-                console.error(err);
-            } else {
-                // Add label above the QR code
-                doc.setTextColor(qr.color);
-                doc.setFontSize(14);
-                if (qr.label) {
-                    doc.text(qr.label, qrXPosition + qrSize / 2, qrYPosition - 10, null, null, 'center');
-                }
-
-                doc.addImage(url, 'PNG', qrXPosition, qrYPosition, qrSize, qrSize);
-
-                // Add name below the QR code
-                doc.setFontSize(12);
-                doc.text(qr.name, qrXPosition + qrSize / 2, qrYPosition + qrSize + 15, null, null, 'center');
-
-                if (index === qrCodes.length - 1) {
-                    const currentDate = new Date();
-                    const formattedDate = currentDate.toLocaleDateString('en-US');
-                    const formattedTime = currentDate.toLocaleTimeString('en-US');
-                    const printDateTime = `Print Date: ${formattedDate} / Print Time: ${formattedTime}`;
-                    doc.text(printDateTime, 50, doc.internal.pageSize.height - 20);
-                    const fileName = `Rekap_Honor_Dosen_Tahun${tahun}_${bulan}.pdf`;
-                    doc.save(fileName);
+    window.jsPDF = window.jspdf.jsPDF;
+    
+    function getMonthName(monthNumber) {
+        const monthNames = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+        return monthNames[monthNumber - 1];
+    }
+    
+    function downloadPDF() {
+        var doc = new jsPDF('p', 'pt', 'a4');
+    
+        doc.setFontSize(10);
+        var tahun = "{{ session('tahun') }}";
+        var bulan = "{{ session('bulan') }}";
+    
+        doc.setFontSize(20);
+        doc.text('HONOR SKS DOSEN UNIVERSITAS QUALITY', 100, 50);
+        doc.setFontSize(15);
+        doc.text(`Pada Bulan ${getMonthName(parseInt(bulan))} Tahun ${tahun}`, 220, 100);
+    
+        var data = [];
+        var headers = ['No', 'ID Dosen', 'Nama', 'Total Honor'];
+        @if(isset($totalHonor) && $totalHonor->isNotEmpty())
+            @foreach ($totalHonor as $index => $j)
+            var TotalHonor = ({{ $j->TotalHonor * 1000 }}).toLocaleString('id-ID');
+            data.push([
+                {{ $index + 1 }},
+                '{{ $j->id_dosen }}',
+                '{{ $j->nama_dosen }}',
+                TotalHonor
+            ]);
+            @endforeach
+            var total = "{{ $total }}";
+            var total = Number("{{ $total * 1000 }}").toLocaleString('id-ID');
+            data.push(["", "", "Total", total]);
+    
+        @endif
+        var startY = 140;
+        var finalY = startY; // Track the final Y position after the table
+    
+        doc.autoTable({
+            head: [headers],
+            body: data,
+            startY: startY,
+            didDrawPage: function(data) {
+                finalY = data.cursor.y; // Update final Y position
+            },
+            didParseCell: function(data) {
+                // Add blue background to the "Total" row
+                if (data.row.index === data.table.body.length - 1) {
+                    data.cell.styles.fillColor = [0, 0, 255]; // RGB for blue
+                    data.cell.styles.textColor = [255, 255, 255]; // White text color
+                    data.cell.styles.fontStyle = 'bold';
                 }
             }
         });
-    });
-}
-</script>
+    
+        var qrYPosition = finalY + 100; // Set QR code Y position below the table
+        var qrSize = 60;
+        var qrMargin = 80;
+    
+        var qrCodes = [
+            { id: 'idDavid', name: 'David Purba', color: '#000000', label: 'Disetujui Oleh' },
+            { id: 'idDedi', name: 'Dedi Simbolon', color: '#000000', label: 'Disetujui Oleh' },
+            { id: 'idHernyke', name: 'Hernyke', color: '#000000', label: 'Disusun Oleh' }
+        ];
+    
+        qrCodes.forEach(function(qr, index) {
+            var qrXPosition = 100 + (index * (qrSize + qrMargin));
+            QRCode.toDataURL(qr.id, { width: qrSize, height: qrSize }, function (err, url) {
+                if (err) {
+                    console.error(err);
+                } else {
+                    // Add label above the QR code
+                    doc.setTextColor(qr.color);
+                    doc.setFontSize(14);
+                    if (qr.label) {
+                        doc.text(qr.label, qrXPosition + qrSize / 2, qrYPosition - 10, null, null, 'center');
+                    }
+    
+                    doc.addImage(url, 'PNG', qrXPosition, qrYPosition, qrSize, qrSize);
+    
+                    // Add name below the QR code
+                    doc.setFontSize(12);
+                    doc.text(qr.name, qrXPosition + qrSize / 2, qrYPosition + qrSize + 15, null, null, 'center');
+    
+                    if (index === qrCodes.length - 1) {
+                        const currentDate = new Date();
+                        const formattedDate = currentDate.toLocaleDateString('en-US');
+                        const formattedTime = currentDate.toLocaleTimeString('en-US');
+                        const printDateTime = `Print Date: ${formattedDate} / Print Time: ${formattedTime}`;
+                        doc.text(printDateTime, 50, doc.internal.pageSize.height - 20);
+                        const fileName = `Rekap_Honor_Dosen_Tahun${tahun}_${bulan}.pdf`;
+                        doc.save(fileName);
+                    }
+                }
+            });
+        });
+    }
+    </script>
+    
 @endsection

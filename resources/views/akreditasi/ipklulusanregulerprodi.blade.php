@@ -18,11 +18,11 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="ta_mulai" class="form-label">Dari TA</label>
+                            <label for="ta_mulai" class="form-label">Dari Stambuk</label>
                             <input type="text" class="form-control" id="ta_mulai" name="ta_mulai" value="{{ old('ta_mulai', isset($ta_start) ? $ta_start : '') }}" required>
                         </div>
                         <div class="col-md-3">
-                            <label for="ta_akhir" class="form-label">Sampai TA</label>
+                            <label for="ta_akhir" class="form-label">Sampai Stambuk</label>
                             <input type="text" class="form-control" id="ta_akhir" name="ta_akhir" value="{{ old('ta_akhir', isset($ta_end) ? $ta_end : '') }}" required>
                         </div>
                         <div class="col-md-3">
@@ -53,7 +53,7 @@
                         <table id="myExportableTable" class="table" font-size="10">
                             <thead>
                                 <tr>
-                                    <th>TA</th>
+                                    <th>Stambuk</th>
                                     <th>Jumlah Lulus</th>
                                     <th>IPK Minimum</th>
                                     <th>IPK Rata-Rata</th>
@@ -120,7 +120,7 @@
         doc.text(`Tahun Ajaran: ${ta}`, 10, 60);
     
         var data = [];
-        var headers = ['TA', 'Jumlah Lulus', 'IPK Minimum', 'IPK Rata-Rata', 'IPK Maksimum'];
+        var headers = ['Stambuk', 'Jumlah Lulus', 'IPK Minimum', 'IPK Rata-Rata', 'IPK Maksimum'];
         @if(isset($data) && count($data['results']) > 0)
         @foreach($data['results'] as $result)
         var row = [
@@ -151,7 +151,7 @@
     
     function downloadExcel() {
         var data = [];
-        var headers = ['TA', 'Jumlah Lulus', 'IPK Minimum', 'IPK Rata-Rata', 'IPK Maksimum'];
+        var headers = ['Stambuk', 'Jumlah Lulus', 'IPK Minimum', 'IPK Rata-Rata', 'IPK Maksimum'];
         @if(isset($data) && count($data['results']) > 0)
         @foreach($data['results'] as $result)
         var row = [
