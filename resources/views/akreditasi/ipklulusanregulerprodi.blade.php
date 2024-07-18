@@ -18,11 +18,11 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="ta_mulai" class="form-label">Dari Stambuk</label>
+                            <label for="ta_mulai" class="form-label">Dari TA</label>
                             <input type="text" class="form-control" id="ta_mulai" name="ta_mulai" value="{{ old('ta_mulai', isset($ta_start) ? $ta_start : '') }}" required>
                         </div>
                         <div class="col-md-3">
-                            <label for="ta_akhir" class="form-label">Sampai Stambuk</label>
+                            <label for="ta_akhir" class="form-label">Sampai TA</label>
                             <input type="text" class="form-control" id="ta_akhir" name="ta_akhir" value="{{ old('ta_akhir', isset($ta_end) ? $ta_end : '') }}" required>
                         </div>
                         <div class="col-md-3">
@@ -54,7 +54,6 @@
                             <thead>
                                 <tr>
                                     <th>Stambuk</th>
-                                    <th>Jumlah Lulus</th>
                                     <th>IPK Minimum</th>
                                     <th>IPK Rata-Rata</th>
                                     <th>IPK Maksimum</th>
@@ -64,7 +63,6 @@
                                 @foreach($data['results'] as $key => $result)
                                 <tr>
                                     <td>{{ $result->TA }}</td>
-                                    <td>{{ $data['total'][$key]->jumlah }}</td>
                                     <td>{{ number_format($result->Minimum_IPK, 2) }}</td>
                                     <td>{{ number_format($result->Rata_rata_IPK, 2) }}</td>
                                     <td>{{ number_format($result->Maksimum_IPK, 2) }}</td>
@@ -125,14 +123,14 @@
         @foreach($data['results'] as $result)
         var row = [
             '{{ $result->TA }}',
-            '{{ $data["total"][$loop->index]->jumlah }}',
+            
             '{{ number_format($result->Minimum_IPK, 2) }}',
             '{{ number_format($result->Rata_rata_IPK, 2) }}',
             '{{ number_format($result->Maksimum_IPK, 2) }}'
         ];
         data.push(row);
         @endforeach
-    @endif
+        @endif
         var startY = 100;
         doc.autoTable({
             head: [headers],
@@ -156,7 +154,7 @@
         @foreach($data['results'] as $result)
         var row = [
             '{{ $result->TA }}',
-            '{{ $data["total"][$loop->index]->jumlah }}',
+            
             '{{ number_format($result->Minimum_IPK, 2) }}',
             '{{ number_format($result->Rata_rata_IPK, 2) }}',
             '{{ number_format($result->Maksimum_IPK, 2) }}'

@@ -56,7 +56,17 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('all/formHonorDosen/bayar-semua', [PembayaranController::class,'bayarSemua']);
     Route::get('/rekaphonor', [PembayaranController::class, 'showRekapHonorDosen'])->name('showRekapHonorDosen');
     Route::post('/rekaphonor', [PembayaranController::class, 'rekapHonorDosen'])->name('rekapHonorDosen');
-     //profil dosen
+    Route::get('/tunjakademik', [SettingHonorController::class,'showTunjAkademik'])->name('showTunjAkademik');
+    Route::post('/tunjakademik', [SettingHonorController::class,'simpanTunjAkademik'])->name('simpanTunjAkademik');
+    Route::post('/activatetunjakademik', [SettingHonorController::class,'activateTunjAkademik'])->name('activateTunjAkademik');
+    Route::get('/leveldosen', [SettingHonorController::class,'showLevelDosen'])->name('showLevelDosen');
+    Route::post('/leveldosen', [SettingHonorController::class,'simpanLevelDosen'])->name('simpanLevelDosen');
+    Route::get('/honorpokok', [SettingHonorController::class,'showHonorPokok'])->name('showHonorPokok');
+    Route::post('/honorpokok', [SettingHonorController::class,'simpanHonorPokok'])->name('simpanHonorPokok');
+    Route::post('/activatepokok', [SettingHonorController::class,'activateHonorPokok'])->name('activateHonorPokok');
+    
+    
+    //profil dosen
   Route::get('/show-profile', [ProfilController::class, 'profilDashboard'])->name('profilDashboard');
   Route::get('/profil/fetchData', [ProfilController::class, 'fetchData']);
   Route::get('input/findDosen', [ProfilController::class, 'findDosen'])->name('findDosen');
@@ -234,8 +244,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/ipkprodi', [AkreditasiController::class,'HitungIPK'])->name('HitungIPK');
     Route::get('/ipklulusanprodi', [AkreditasiController::class,'showIPKPPRODI'])->name('showIPKPPRODI');
     Route::post('/ipklulusanprodi', [AkreditasiController::class,'IPKLulusanPPRODI'])->name('IPKLulusanPPRODI');
-    Route::get('/ipklulusankaryawanprodi', [AkreditasiController::class,'showIPKPPRODIRegular'])->name('showIPKPPRODIRegular');
-    Route::post('/ipklulusankaryawanprodi', [AkreditasiController::class,'IPKLulusanPPRODIRegular'])->name('IPKLulusanPPRODIRegular');
+    Route::get('/ipklulusanregulerprodi', [AkreditasiController::class,'showIPKPPRODIRegular'])->name('showIPKPPRODIRegular');
+    Route::post('/ipklulusanregulerprodi', [AkreditasiController::class,'IPKLulusanPPRODIRegular'])->name('IPKLulusanPPRODIRegular');
     Route::get('/rekapmahasiswakaryawan', [AkreditasiController::class,'showRekapKaryawanProdi'])->name('form.karyawan');
     Route::post('/rekapmahasiswakaryawan', [AkreditasiController::class,'viewRekapKaryawanProdi'])->name('view.karyawan');
     Route::get('/detailmahasiswakaryawan', [AkreditasiController::class,'detailKaryawanAktif'])->name('detail.karyawan');

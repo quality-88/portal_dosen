@@ -43,6 +43,15 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('showSettingHonor') }}">Set Honor SKS DOSEN S2</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showTunjAkademik') }}">Set Tunjangan Akademik</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showLevelDosen') }}">Level Dosen</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showHonorPokok') }}">Honor Pokok Dosen</a>
+                        </li>
                     </ul>
                 </div>
             </li>

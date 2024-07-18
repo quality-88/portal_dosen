@@ -283,12 +283,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     createCombinedBarCharts(labels, totalDaftar, totalDaftarUlang);
     
-    
     function createPDF() {
     var doc = new jsPDF('p', 'pt', 'a4');
     doc.setTextColor(0, 0, 255);
 
-    // Calculate page width
+    // Calculate initial page width and height
     var pageWidth = doc.internal.pageSize.getWidth();
     var pageHeight = doc.internal.pageSize.getHeight();
     var universitas = "{{ session('universitas') }}";
@@ -323,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
             valign: 'middle',
             fillColor: [100, 149, 237], // Background color for non-header cells
             textColor: [0, 0, 0], // Default text color (black)
-            lineWidth: 3, // Width of table border lines
+            lineWidth: 2, // Width of table border lines
             columnWidth: columnWidth, // Set column width
         },
         headStyles: {
@@ -338,6 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
         didDrawCell: function (data) {
             var rowsToHighlight = [5, 10, 15, 21, 26, 31, 37, 42, 48, 53, 58, 64, 65];
             var rowIndex = data.row.index; // Index starts at 0, so add 1
+            var columnsToBoldBorder = [1, 4, 7];
 
             if (data.section === 'head') {
                 doc.setFillColor(0, 168, 107); // Set header background color to green
@@ -373,6 +373,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (rowIndex === 65) {
                 doc.setFontSize(14); // Reset to default font size after drawing row 65
             }
+            if (data.section === 'body' && [1, 4, 7].includes(data.column.index)) {
+                var lineWidth = 4;
+                var startY = data.cell.y + 1;
+                var endY = data.cell.y + data.cell.height - 1;
+                var startX = data.cell.x + data.cell.width;
+                doc.setLineWidth(lineWidth);
+                doc.setDrawColor(100, 100, 100); // Color of the border
+                doc.line(startX, startY, startX, endY); // Vertical line
+            }
         }
     });
 
@@ -382,10 +391,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Add first landscape page (page 2)
         doc.addPage('a4', 'landscape');
+        pageWidth = doc.internal.pageSize.getWidth(); // Update width and height for landscape
+        pageHeight = doc.internal.pageSize.getHeight();
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(12);
         doc.text(`Grafik Pendaftaran Mahasiswa Baru Universitas Quality ${lokasiText} (${ta_awal} - ${ta_akhir})`, 10, 40);
-         doc.addImage(imgData, 'PNG', 60, 120, pageWidth + 100, 400);
+        doc.addImage(imgData, 'PNG', 60, 120, pageWidth - 120, 400); // Adjusted width to fit the image properly
 
         const currentDate = new Date();
         const formattedDate = currentDate.toLocaleDateString('en-US');
@@ -399,10 +410,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Add second landscape page (page 4)
             doc.addPage('a4', 'landscape');
+            pageWidth = doc.internal.pageSize.getWidth(); // Update width and height for landscape
+            pageHeight = doc.internal.pageSize.getHeight();
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(12);
             doc.text(`Grafik Pendaftaran Ulang Mahasiswa Baru Universitas Quality ${lokasiText} (${ta_awal} - ${ta_akhir})`, 10, 40);
-             doc.addImage(imgData, 'PNG', 60, 120, pageWidth + 100, 400);
+            doc.addImage(imgData, 'PNG', 60, 120, pageWidth - 120, 400); // Adjusted width to fit the image properly
 
             doc.setFontSize(10);
             doc.setTextColor(100, 100, 100);
@@ -413,10 +426,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add page numbers to each page
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);
+                pageWidth = doc.internal.pageSize.getWidth();
+                pageHeight = doc.internal.pageSize.getHeight();
                 const pageNumberText = `Page ${i} of ${totalPages}`;
                 doc.setFontSize(10);
                 doc.setTextColor(100, 100, 100);
-                doc.text(pageNumberText, pageWidth / 2, doc.internal.pageSize.getHeight() - 30, { align: 'center' });
+                doc.text(pageNumberText, pageWidth / 2, pageHeight - 20, { align: 'center' });
             }
             // Save the PDF
             doc.save(`Grafik_Monitoring_PMB-${lokasiText}_${ta_awal} - ${ta_akhir}_${formattedDate}.pdf`);

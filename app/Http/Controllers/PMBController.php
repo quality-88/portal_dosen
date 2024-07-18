@@ -314,7 +314,7 @@ class PMBController extends Controller
             'b.fakultas',
             'a.idkampus'
         )
-        ->whereDate('a.TGLDAFTARULANG', '=', $endDateSql)
+        ->whereDate('a.TGLLUNASPUMB', '=', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
         ->whereNotNull('a.NPM')
@@ -397,7 +397,7 @@ class PMBController extends Controller
             'b.fakultas',
             'a.idkampus'
         )
-        ->whereDate('a.TGLLUNASPMB', '<', $endDateSql)
+        ->whereDate('a.TGLLUNASPUMB', '<', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
         ->whereNotNull('a.NPM')
@@ -476,9 +476,15 @@ class PMBController extends Controller
          ->whereDate('a.postingdate', '=', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
-        ->whereNull('a.NPM')
         ->where('a.posted', '=', 'y')
-        ->whereNull('a.tgllunaspumb')
+        ->where(function ($query) use ($endDateSql) {
+            $query->whereDate('a.tgllunaspumb', '>', $endDateSql)
+                  ->orWhereNull('a.tgllunaspumb');
+        })
+        ->where(function ($query) use ($endDateSql) {
+            $query->whereDate('a.tgllunaspumb', '>', $endDateSql)
+                  ->orWhereNull('a.NPM');
+        })
         ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan','a.universitas')
         ->get();
         //dd($TidakUlangS1);
@@ -503,12 +509,18 @@ class PMBController extends Controller
         ->whereDate('a.TGLLUNASPMB', '=', $endDateSql)
         ->where('a.Universitas', '=', $universitas)
         ->where('a.ta', '=', $ta)
-        ->whereNull('a.NPM')
-        ->whereNull('a.tgllunaspumb')
+        ->where(function ($query) use ($endDateSql) {
+        $query->whereDate('a.tgllunaspumb', '>', $endDateSql)
+              ->orWhereNull('a.tgllunaspumb');
+        })
+        ->where(function ($query) use ($endDateSql) {
+            $query->whereDate('a.tgllunaspumb', '>', $endDateSql)
+                ->orWhereNull('a.NPM');
+        })
         ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan')
         ->get();
         $mergedTidakUlang = $TidakUlangS1->merge($TidakUlangS2);
-        //dd($mergedTidakUlang);
+        //dd($TidakUlangS2);
         $TidakUlangSebelumnya=DB::table('PMBRegistrasi as a')
         ->join('fakultas as b', 'a.idfakultas', '=', 'b.idfakultas')
         ->select(
@@ -570,32 +582,39 @@ class PMBController extends Controller
         ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan','a.universitas')
         ->get();
         //dd($TidakUlangSebelumnya);
-        $TidakUlangS2Sebelumnya=DB::table('PMBRegistrasiS2 as a')
-        ->join('fakultas as b', 'a.idfakultas', '=', 'b.idfakultas')
-        ->select(
-            DB::raw('COUNT(a.nopeserta) AS Jumlah'),
-            DB::raw("
-                COALESCE(
-                    CASE 
-                        WHEN a.pindahan = 'S' THEN CONCAT(a.prodi, ' KIP')
-                       WHEN a.idkampus = '04' THEN a.prodi + ' (04 - LANGKAT)'
-                        ELSE a.prodi 
-                    END, 
-                    ''
-                ) AS prodi"
-            ),
-            'a.idfakultas',
-            'b.fakultas',
-            'a.idkampus'
-        )
-        ->whereDate('a.TGLLUNASPMB', '<', $endDateSql)
-        ->where('a.Universitas', '=', $universitas)
-        ->where('a.ta', '=', $ta)
-        ->whereNull('a.NPM')
-        ->whereNull('a.tgllunaspumb')
-        ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan')
-        ->get();
-        //dd($totalUlang,$mergedUlangSebelumnyaCount,$mergedUlangCount,$mergedUlangSebelumnya);
+       $TidakUlangS2Sebelumnya = DB::table('PMBRegistrasiS2 as a')
+    ->join('fakultas as b', 'a.idfakultas', '=', 'b.idfakultas')
+    ->select(
+        DB::raw('COUNT(a.nopeserta) AS Jumlah'),
+        DB::raw("
+            COALESCE(
+                CASE 
+                    WHEN a.pindahan = 'S' THEN CONCAT(a.prodi, ' KIP')
+                    WHEN a.idkampus = '04' THEN CONCAT(a.prodi, ' (04 - LANGKAT)')
+                    ELSE a.prodi 
+                END, 
+                ''
+            ) AS prodi"
+        ),
+        'a.idfakultas',
+        'b.fakultas',
+        'a.idkampus'
+    )
+    ->whereDate('a.TGLLUNASPMB', '<', $endDateSql)
+    ->where('a.Universitas', '=', $universitas)
+    ->where('a.ta', '=', $ta)
+    ->where(function ($query) use ($endDateSql) {
+        $query->whereDate('a.tgllunaspumb', '>', $endDateSql)
+              ->orWhereNull('a.tgllunaspumb');
+    })
+    ->where(function ($query) use ($endDateSql) {
+        $query->whereDate('a.tgllunaspumb', '>', $endDateSql)
+              ->orWhereNull('a.NPM');
+    })
+    ->groupBy('a.idkampus', 'a.idfakultas', 'b.fakultas', 'a.prodi', 'a.pindahan')
+    ->get();
+
+        //dd($TidakUlangS2);
         $mergedTidakUlangSebelumnya = $TidakUlangSebelumnya->merge($TidakUlangS2Sebelumnya);
         //dd($TidakUlangSebelumnya);
 
@@ -1292,7 +1311,8 @@ public function viewGrafikPMB(Request $request)
 }
 public function showDataCalonMahasiswa()
 {
-    return view('pmb.datacalonmahasiswa');
+    $prodis = DB::table('prodi')->select('idfakultas', 'prodi')->distinct()->get(); 
+    return view('pmb.datacalonmahasiswa',compact('prodis'));
 }
 public function ViewDataCalonMahasiswa(Request $request)
 {
@@ -1315,17 +1335,22 @@ public function ViewDataCalonMahasiswa(Request $request)
     
     // Execute the query
     $results = DB::select(
-        "SELECT NOPESERTA, emailregis, nama, hp, alamatasal, ASALSMU
-        FROM pmbregistrasi
-        WHERE YEAR(postingdate) = ?
-        AND ta = ?
-        and posted ='y'
-        and nopeserta is not null
-        AND universitas = ?
-        order by ta",
-        [$ta, $ta, $universitas]
-    );
-
+        "SELECT 
+        postingdate,NOPESERTA, emailregis,passemail, nama, hp, alamatasal, ASALSMU,kelas,tipekelas,prodi,
+        CASE
+            WHEN npm IS NOT NULL THEN 'Sudah'
+            ELSE 'Belum'
+            END AS daftarulang
+            FROM pmbregistrasi
+            WHERE YEAR(postingdate) = ?
+                AND ta = ?
+                AND posted = 'y'
+                AND universitas = ?
+            ORDER BY prodi",
+            [$ta, $ta, $universitas]
+        );
+        //dd($results);
+    $prodis = DB::table('prodi')->select('idfakultas', 'prodi')->distinct()->get(); 
     return view('pmb.datacalonmahasiswa',compact('results','ta','universitas'));
 
 }
@@ -1368,5 +1393,3 @@ public function ViewDataCalonMahasiswaS2(Request $request)
 
 }
 }
-
-

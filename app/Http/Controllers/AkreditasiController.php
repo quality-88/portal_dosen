@@ -769,13 +769,17 @@ public function showIPKPPRODI()
        $universitas, $prodi, $ta_start, $ta_end
    ]);
    
-       $total = DB::table('mahasiswa')
-           ->select(DB::raw('YEAR(tgllulusmh) as TA, count(npm) as jumlah'))
-           ->where('universitas', $universitas)
-           ->where('prodi', $prodi)
-           ->whereBetween(DB::raw('YEAR(tgllulusmh)'), [$ta_start, $ta_end])
-           ->groupBy(DB::raw('YEAR(tgllulusmh)'))
-           ->get();
+   $total = DB::table('krsdetail')
+   ->join('matakuliah', 'krsdetail.idmk', '=', 'matakuliah.idmk')
+   ->join('mahasiswa', 'mahasiswa.npm', '=', 'krsdetail.npm')
+   ->select(DB::raw('count(krsdetail.npm) as jumlah, krsdetail.ta as TA'))
+   ->where('matakuliah.matakuliah', 'skripsi')
+   ->whereBetween('krsdetail.ta', [$ta_start, $ta_end])
+   ->where('krsdetail.universitas', $universitas)
+   ->where('krsdetail.prodi', $prodi)
+   ->where('mahasiswa.tipekelas', 'like', 'baru%')
+   ->groupBy('krsdetail.ta')
+   ->get();
    
        $data = [
            'results' => $results,
@@ -800,79 +804,65 @@ public function showIPKPPRODI()
        session(['ta_end' => $ta_end]);
    
        $results = DB::select("
-       SELECT 
-           TA,
-           MIN(IPK) AS Minimum_IPK,
-           AVG(IPK) AS Rata_rata_IPK,
-           MAX(IPK) AS Maksimum_IPK
-       FROM (
-           SELECT 
-               krs.TA AS TA,
-               COALESCE(krs.NPM, krsm.NPM) AS NPM,
-               COALESCE(krs.TotalNilai, 0) + COALESCE(krsm.TotalNilai, 0) AS TotalNilai,
-               COALESCE(krs.TotalSKS, 0) + COALESCE(krsm.TotalSKS, 0) AS TotalSKS,
-               (COALESCE(krs.TotalNilai, 0) + COALESCE(krsm.TotalNilai, 0)) / 
-                   NULLIF((COALESCE(krs.TotalSKS, 0) + COALESCE(krsm.TotalSKS, 0)), 0) AS IPK
-           FROM
-               (SELECT
-                   d.stambuk as TA,
-                   b.NPM,
-                   SUM(CASE WHEN c.NilaiAngka IS NOT NULL THEN c.NilaiAngka * a.SKS ELSE 0 END) AS TotalNilai,
-                   SUM(b.SKS) AS TotalSKS
-               FROM krsdetail AS b
-               JOIN matakuliah AS a ON b.IdMK = a.idmk
-               LEFT JOIN SettingNilai AS c ON c.NilaiHuruf = b.NilaiAkhir
-               LEFT JOIN mahasiswa d ON d.npm = b.npm
-               WHERE b.universitas = ? 
-               AND d.prodi = ?
-               AND d.stambuk BETWEEN ? AND ?
-               AND d.StatusMahasiswa = 'lulus'
-               and d.tipekelas='BARU REGULER'
-               AND NOT EXISTS (
-                   SELECT 1
-                   FROM krsdetail AS d2
-                   JOIN matakuliah AS e ON d2.IdMK = e.idmk
-                   LEFT JOIN SettingNilai AS f ON f.NilaiHuruf = d2.NilaiAkhir
-                   WHERE d2.npm = b.npm
-                   AND d2.idmk = b.idmk
-                   AND (f.NilaiAngka > c.NilaiAngka OR (f.NilaiAngka IS NULL AND c.NilaiAngka IS NOT NULL))
-                   AND (f.NilaiAngka IS NOT NULL OR c.NilaiAngka IS NULL)
-               )
-               GROUP BY d.stambuk, b.NPM
-           ) AS krs
-           FULL OUTER JOIN
-           (
-               SELECT 
-                   d.stambuk as TA,
-                   b.NPM,
-                   SUM(c.NilaiAngka * a.SKS) AS TotalNilai,
-                   SUM(b.SKS) AS TotalSKS
-               FROM krsm AS b
-               JOIN matakuliah AS a ON b.IdMK = a.idmk
-               JOIN settingnilai AS c ON c.nilaihuruf = b.nilaiakhir
-               LEFT JOIN mahasiswa d ON d.npm = b.npm
-               WHERE b.universitas = ?
-               AND d.prodi = ?
-               AND d.statusmahasiswa = 'lulus'
-               and d.tipekelas='BARU REGULER'
-               AND b.nilaiakhir IS NOT NULL
-               AND d.stambuk BETWEEN ? AND ?
-               GROUP BY d.stambuk, b.NPM
-           ) AS krsm ON krs.NPM = krsm.NPM AND krs.TA = krsm.TA
-       ) AS IPK_Results
-       GROUP BY TA
+SELECT 
+    TA,
+    MIN(IPK) AS Minimum_IPK,
+    AVG(IPK) AS Rata_rata_IPK,
+    MAX(IPK) AS Maksimum_IPK
+FROM (
+    SELECT 
+        d.stambuk AS TA,
+        b.NPM,
+        SUM(CASE WHEN c.NilaiAngka IS NOT NULL THEN c.NilaiAngka * a.SKS ELSE 0 END) AS TotalNilai,
+        SUM(a.SKS) AS TotalSKS,
+        CASE 
+            WHEN SUM(a.SKS) > 0 THEN SUM(CASE WHEN c.NilaiAngka IS NOT NULL THEN c.NilaiAngka * a.SKS ELSE 0 END) / SUM(a.SKS)
+            ELSE 0 
+        END AS IPK
+    FROM krsdetail AS b
+    JOIN matakuliah AS a ON b.IdMK = a.idmk
+    LEFT JOIN SettingNilai AS c ON c.NilaiHuruf = b.NilaiAkhir
+    LEFT JOIN mahasiswa d ON d.npm = b.npm
+    WHERE d.universitas = ?
+        AND b.prodi = ?
+        AND d.tipekelas LIKE 'baru reguler'
+        and b.ta between ? and ?
+        AND EXISTS (
+    SELECT 1
+    FROM krsdetail AS kd
+    JOIN matakuliah AS e ON kd.IdMK = e.idmk
+    WHERE kd.npm = b.npm
+    AND e.matakuliah = 'skripsi'
+    AND kd.ta BETWEEN ? AND ?
+)
+        AND NOT EXISTS (
+            SELECT 1
+            FROM krsdetail AS d2
+            JOIN matakuliah AS e ON d2.IdMK = e.idmk
+            LEFT JOIN SettingNilai AS f ON f.NilaiHuruf = d2.NilaiAkhir
+            WHERE d2.npm = b.npm
+                AND d2.idmk = b.idmk
+                AND (f.NilaiAngka > c.NilaiAngka OR (f.NilaiAngka IS NULL AND c.NilaiAngka IS NOT NULL))
+                AND (f.NilaiAngka IS NOT NULL OR c.NilaiAngka IS NULL)
+        )
+    GROUP BY d.stambuk, b.NPM
+) AS IPK_Results
+GROUP BY TA
    ", [
-       $universitas, $prodi, $ta_start, $ta_end,
-       $universitas, $prodi, $ta_start, $ta_end
+       $universitas, $prodi, $ta_start, $ta_end,$ta_start, $ta_end
    ]);
    
-       $total = DB::table('mahasiswa')
-           ->select(DB::raw('stambuk as TA, count(npm) as jumlah'))
-           ->where('universitas', $universitas)
-           ->where('prodi', $prodi)
-           ->whereBetween(('stambuk'), [$ta_start, $ta_end])
-           ->groupBy('stambuk')
-           ->get();
+   $total = DB::table('krsdetail')
+   ->join('matakuliah', 'krsdetail.idmk', '=', 'matakuliah.idmk')
+   ->join('mahasiswa', 'mahasiswa.npm', '=', 'krsdetail.npm')
+   ->select(DB::raw('count(krsdetail.npm) as jumlah, krsdetail.ta as TA'))
+   ->where('matakuliah.matakuliah', 'skripsi')
+   ->whereBetween('krsdetail.ta', [$ta_start, $ta_end])
+   ->where('krsdetail.universitas', $universitas)
+   ->where('krsdetail.prodi', $prodi)
+   ->where('mahasiswa.tipekelas', 'like', 'baru%')
+   ->groupBy('krsdetail.ta')
+   ->get();
    
        $data = [
            'results' => $results,

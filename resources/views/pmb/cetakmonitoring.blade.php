@@ -142,7 +142,7 @@
     // Menambahkan teks informasi ke dokumen PDF
     doc.setFontSize(25);
     doc.setTextColor(0, 0, 0);
-    doc.text(`UNIVERSITAS QUALITY ${lokasiText}`, 100, 40);
+    doc.text(`UNIVERSITAS QUALITY ${lokasiText}`, 130, 40);
     doc.text(`PMB Monitoring ${ta}`, 210, 80);
     // Menambahkan tanggal cetak di sini
 
