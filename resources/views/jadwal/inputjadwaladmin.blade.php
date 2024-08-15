@@ -612,7 +612,7 @@
             <div class="card">
                 <div class="card-body">
                     <h6 class="card-title">Data Table</h6>
-                   <div class="custom-tabs">
+                    <div class="custom-tabs">
                        <span class="tab-item" onclick="openTab(event, 1)">Senin</span>
                        <span class="tab-item" onclick="openTab(event, 2)">Selasa</span>
                        <span class="tab-item" onclick="openTab(event, 3)">Rabu</span>
@@ -713,7 +713,7 @@
                 
         if (selectedProdi) {
             $.ajax({
-                url: '/fetchFakultas',
+                url: '{{ route("fetchFakultas") }}',
                 method: 'GET',
                 data: { prodi: selectedProdi },
                 success: function (response) {
@@ -788,7 +788,7 @@ function openTab(evt, tabName) {
     // Menambahkan kelas 'active' ke tab yang ditekan
     evt.currentTarget.classList.add("active");
     $.ajax({
-        url: '/fetchJadwal',
+        url: '{{ route("fetchJadwal") }}',
         method: 'GET',
         data: {
             harijadwal: harijadwal,
@@ -852,6 +852,9 @@ function openTab(evt, tabName) {
                 tableContent += '<td>' + (row.nama_dosen3 || '-') + '</td>';
                 tableContent += '<td>' + (row.iddosen4 || '-') + '</td>';
                 tableContent += '<td>' + (row.nama_dosen4 || '-') + '</td>';
+
+                // Tambahkan tombol validasi
+               
                 tableContent += '</tr>';
             });
 
@@ -878,7 +881,7 @@ function deleteRow(idprimary) {
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: '/deleteJadwal',
+                url: '{{ route("deleteJadwal") }}',
                 method: 'POST',
                 data: {
                     idprimary: idprimary,
@@ -937,7 +940,7 @@ $(document).ready(function() {
         console.log('prodi:', prodi);
         
         $.ajax({
-            url: '/getIDMK',
+            url: '{{ route("getIDMK") }}',
             method: 'POST',
             data: {
                 ta: ta,
@@ -993,7 +996,7 @@ $(document).ready(function() {
     $('#searchButton').click(function() {
         var sks = $('#sks').val();
         $.ajax({
-            url: '/getRuangJam',
+            url: '{{ route("getRuang") }}',
             method: 'POST',
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'),
@@ -1048,7 +1051,7 @@ $(document).ready(function() {
         console.log('prodi:', prodi);
         
         $.ajax({
-            url: '/getHonor',
+            url: '{{ route("getHonor") }}',
             method: 'POST',
             data: {
                 idmk: idmk,
@@ -1102,7 +1105,7 @@ $(document).ready(function() {
         console.log('prodi:', prodi);
         
         $.ajax({
-            url: '/getDosen2',
+            url: '{{ route("getDosen2") }}',
             method: 'POST',
             data: {
                 idmk: idmk,
@@ -1156,7 +1159,7 @@ $(document).ready(function() {
         console.log('prodi:', prodi);
         
         $.ajax({
-            url: '/getDosen3',
+            url: '{{ route("getDosen3") }}',
             method: 'POST',
             data: {
                 idmk: idmk,
@@ -1206,7 +1209,7 @@ $(document).ready(function() {
         var idkampus = $('#idkampus').val();
         
         $.ajax({
-            url: '/getGabungan',
+            url: '{{ route("getGabungan") }}',
             method: 'POST',
             data: {
                 idkampus: idkampus,
@@ -1251,7 +1254,7 @@ $(document).ready(function() {
     $('#searchButton6').on('click', function() {
         
         $.ajax({
-            url: '/getProdiGabungan',
+            url: '{{ route("getProdiGabungan") }}',
             method: 'POST',
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content')
@@ -1294,7 +1297,7 @@ $(document).ready(function() {
 $(document).ready(function() {
             $('#searchButton7').on('click', function() {
                 $.ajax({
-                    url: '/getKurikulum',
+                    url: '{{ route("getKurikulum") }}',
                     method: 'POST',
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content')
@@ -1345,7 +1348,7 @@ $(document).ready(function() {
         var idkampus = $('#idkampus').val();
         console.log('Selected idkampus:', idkampus);
         $.ajax({
-            url: '/getKelas',
+            url: '{{ route("getKelas") }}',
             method: 'POST',
             data: {
                 idkampus: idkampus,
@@ -1393,10 +1396,10 @@ $(document).ready(function() {
             harijadwal: $('#harijadwal').val(),
             idkampus: $('#idkampus').val(),
             prodi: $('#prodi').val(),
-            idfakultas: $('#idfakultas').val(),
+            idfakultas: $('#id_fakultas').val(),
             ta: $('#ta').val(),
             semester: $('#semester').val(),
-            kelas: $('#kelas').val(),
+            kelas: $('#kelas1').val(),
             kurikulum: $('#kurikulum1').val(),
             idmk: $('#idmk').val(),
             matakuliah: $('#matakuliah').val(),
@@ -1435,7 +1438,8 @@ $(document).ready(function() {
                         // Tampilkan SweetAlert jika ada bentrok
                         let message = 'Dosen sudah memiliki kelas pada jam yang sama:\n\n';
                         response.data.forEach(function(item) {
-                            message += `Kelas: ${item.kelas}, IDMK: ${item.idmk}, Jam: ${item.jammasuk} - ${item.jamkeluar}\n`;
+                            // Gunakan item.hari untuk menampilkan nama hari
+                            message += `Hari: ${item.hari}, Kelas: ${item.kelas}, IDMK: ${item.idmk}, Jam: ${item.jammasuk} - ${item.jamkeluar}\n`;
                         });
 
                         Swal.fire({

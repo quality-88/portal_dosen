@@ -79,11 +79,11 @@
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>Level Dosen</th>
                                 <th>Pendidikan</th>
                                 <th>NIDN</th>
                                 <th>Status Dosen</th>
                                 <th>Jabatan Akademik</th>
-                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>

@@ -288,7 +288,7 @@ public function editProfile(Request $request)
     'emailpribadi', 'nomor_rek', 'nik', 'npwp', 'ketenagakerjaan', 'kesehatan',
     'relationship_status', 'jlhtanggungan', 'namaibu', 'username', 'password', 'nidn',
     'jabatan', 'tanggalgabung', 'homebase', 'lokasi', 'jenjang', 'jabat', 'golongan',
-    'kepangkatan', 'honor', 'tunjpendidikan', 'tunjakademik', 'cabang', 'aktifan',
+    'kepangkatan', 'tunjpendidikan', 'tunjakademik', 'cabang', 'aktifan',
     'nip', 'skdosen'];
     foreach ($fieldsToEnsure as $field) {
         if (!isset($data[$field])) {
@@ -335,7 +335,6 @@ public function editProfile(Request $request)
         'jabatanakademik' => $data['jabat'],
         'golongan' => $data['golongan'],
         'kepangkatan' => $data['kepangkatan'],
-        'honorsks' => $honor,
         'TMTdosen' => date('Y-m-d', strtotime($data['tmt'])),
         'tunjpendidikan' => $data['tunjpendidikan'],
         'tunjakademik' => $data['tunjakademik'],
@@ -1687,4 +1686,5 @@ public function addProfile(Request $request)
     return response()->json(['success' => 'Data berhasil disimpan!']);
   
 }
+
 }

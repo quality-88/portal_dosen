@@ -4,7 +4,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
 
 class CheckLoginTime
@@ -13,12 +12,13 @@ class CheckLoginTime
     {
         $lastActivity = session('last_activity');
 
-        if (!is_null($lastActivity) && time() - $lastActivity > 12000) { // Sesuaikan dengan kebutuhan waktu timeout (dalam detik)
-            // Sesuaikan dengan tindakan yang sesuai, contohnya mengarahkan ke halaman login
-            return view('admin.login')->with('message', 'Sesi Anda telah kadaluwarsa. Silakan login kembali.');
+        if ($lastActivity && Carbon::now()->diffInSeconds($lastActivity) > 12000) { 
+            // Sesuaikan 12000 dengan waktu timeout yang diinginkan (dalam detik)
+            session()->flush(); // Menghapus semua sesi
+            return redirect('/login')->with('message', 'Sesi Anda telah kadaluwarsa. Silakan login kembali.');
         }
 
-        session()->put('last_activity', time());
+        session()->put('last_activity', Carbon::now());
 
         return $next($request);
     }

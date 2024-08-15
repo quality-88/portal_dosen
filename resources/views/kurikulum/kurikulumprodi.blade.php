@@ -92,11 +92,9 @@
                                     <td>{{ $result->SKS }}</td>
                                     <td>{{ $result->SEMESTER }}</td>
                                     <td>
-                                        <!-- Tombol Edit -->
-                                        <button type="button" class="btn btn-warning btn-sm" onclick="editData({{ $result->idPrimary }})">Edit</button>
-                                        <!-- Tombol Hapus -->
+                                        <a href="{{ route('editKurikulum', ['id' => $result->idPrimary]) }}" class="btn btn-warning btn-sm">Edit</a>
                                         <button type="button" class="btn btn-danger btn-sm" onclick="deleteData({{ $result->idPrimary }})">Hapus</button>
-                                    </td>
+                                    </td>                                    
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -183,7 +181,8 @@
                     
             if (selectedProdi) {
                 $.ajax({
-                    url: 'kurikulum/fetchFakultash',
+                    
+                    url: '{{ route("fetchFakultash") }}',
                     method: 'GET',
                     data: { prodi: selectedProdi },
                     success: function (response) {
@@ -231,21 +230,64 @@
         var prodi = "{{ session('prodi') }}";
         var url = "{{ route('tambahKurikulum') }}";
         console.log('Kurikulum:', kurikulum);
-    console.log('ID Kampus:', idKampus);
-    console.log('ID Fakultas:', idFakultas);
-    console.log('Prodi:', prodi);
-// Assuming 'idDosen', 'idMK', 'kelas', 'idKampus', 'prodi', and 'tglUAS' are your parameters
-var parameters = {
-    kurikulum : kurikulum,
-    idKampus : idKampus,
-    idFakultas : idFakultas,
-    prodi: prodi,
-};
+        console.log('ID Kampus:', idKampus);
+        console.log('ID Fakultas:', idFakultas);
+        console.log('Prodi:', prodi);
+    // Assuming 'idDosen', 'idMK', 'kelas', 'idKampus', 'prodi', and 'tglUAS' are your parameters
+    var parameters = {
+        kurikulum : kurikulum,
+        idKampus : idKampus,
+        idFakultas : idFakultas,
+        prodi: prodi,
+    };
 
-// Redirect to the route with parameters
-window.location.href = url + '?' + new URLSearchParams(parameters).toString();
+    // Redirect to the route with parameters
+    window.location.href = url + '?' + new URLSearchParams(parameters).toString();
 
+  }
+
+    function editClick() {
+            // Kumpulkan data yang diperlukan dari formulir
+            var kurikulum = "{{ session('kurikulum') }}";
+            var idKampus = "{{ session('idkampus') }}";
+            var idFakultas = "{{ session('idFakultas') }}";
+            var prodi = "{{ session('prodi') }}";
+            var url = "{{ route('tambahKurikulum') }}";
+            console.log('Kurikulum:', kurikulum);
+        console.log('ID Kampus:', idKampus);
+        console.log('ID Fakultas:', idFakultas);
+        console.log('Prodi:', prodi);
+    // Assuming 'idDosen', 'idMK', 'kelas', 'idKampus', 'prodi', and 'tglUAS' are your parameters
+    var parameters = {
+        kurikulum : kurikulum,
+        idKampus : idKampus,
+        idFakultas : idFakultas,
+        prodi: prodi,
+    };
+
+    // Redirect to the route with parameters
+    window.location.href = url + '?' + new URLSearchParams(parameters).toString();
+
+  }
+
+    function deleteData(idPrimary) {
+            if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
+                $.ajax({
+                    url: "{{ route('deleteKurikulum') }}", // Pastikan ini sesuai dengan route yang akan dibuat
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}", // Token CSRF untuk keamanan
+                        idPrimary: idPrimary
+                    },
+                    success: function(response) {
+                        alert("Data berhasil dihapus");
+                        location.reload(); // Refresh halaman setelah penghapusan berhasil
+                    },
+                    error: function(xhr) {
+                        alert("Terjadi kesalahan saat menghapus data");
+                    }
+                });
             }
-
+        }
        </script>
 @endsection

@@ -83,64 +83,76 @@ public function processForm(Request $request)
 
     $results = DB::select("
     SELECT
-        a.fingerin as tglin,
-        a.lokasi as lokasi,
-        a.prodi as prodi,
-        a.idDosen as iddosen,
-        a.idmk as idmk,
-        a.matakuliah as matakuliah,
-        a.sks as sks,
-        a.masuk as masuk,
-        a.keluar as keluar,
-        a.kelas as kelas,
-        a.jumlahtotal as jumlah,
-        a.pertemuanke,
-        CASE
-            WHEN a.keterangan LIKE '%Gabungan Ke Kelas%' THEN 0
-            WHEN (MAX(a.pertemuanke) IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
-                AND a.jumlahtotal BETWEEN MAX(b.jumlahMHSAwalA) AND MAX(b.JumlahMHSAkhirA)) THEN 0
-            WHEN (MAX(a.pertemuanke) IN (5,6,7,8,9,10,11,12,13,14,15,16)
-                AND a.jumlahtotal BETWEEN MAX(b.JumlahMhsAwalB) AND MAX(b.JumlahMHSAkhirB)) THEN 0
-            WHEN (MAX(a.pertemuanke) IN (9,10,11,12,13,14,15,16)
-                AND a.jumlahtotal BETWEEN MAX(b.jumlahMHSAWALC) AND MAX(B.JumlahMHSAkhirC)) THEN 0
-            ELSE MAX(a.TotalHonor) 
-        END AS honorSKSDosen,
-        a.namadosen as namadosen,
-        MAX(ISNULL(a.keterangan, '')) as keterangan
-    FROM
-        TblSementaraHonorDosen a
-    INNER JOIN
-        TblKoutaHonor b ON b.TA = a.TA AND b.Semester = a.semester
-    WHERE
-        a.TA = :TA
-        AND a.Semester = :Semester
-        AND a.fingerin >= :startDate
-        AND a.fingerin <= :endDate
-        AND a.idkampus = :idKampus
-        " . ($isProdiFilled ? "AND a.prodi = :prodi" : "") . "
-        " . ($isNamaFilled ? "AND a.NamaDosen = :NamaDosen" : "") . "
-        " . (!empty($iddosen) ? "AND a.iddosen = :iddosen" : "") . " 
-    GROUP BY
-        a.fingerin,
-        a.lokasi,
-        a.prodi,
-        a.idDosen,
-        a.idmk,
-        a.matakuliah,
-        a.sks,
-        a.masuk,
-        a.keluar,
-        a.kelas,
-        a.jumlahtotal,
-        a.pertemuanke,
-        a.namadosen,
-        a.keterangan
-    ORDER BY
-        a.idDosen ASC,
-        a.namadosen ASC,
-        a.idmk ASC,
-        a.matakuliah ASC,
-        a.fingerin ASC
+    a.fingerin as tglin,
+    a.lokasi as lokasi,
+    a.prodi as prodi,
+    a.idDosen as iddosen,
+    a.idmk as idmk,
+    a.matakuliah as matakuliah,
+    a.sks as sks,
+    a.masuk as masuk,
+    a.keluar as keluar,
+    a.kelas as kelas,
+    a.jumlahtotal as jumlah,
+    a.pertemuanke,
+    CASE
+        WHEN a.prodi = 'S2 PENDIDIKAN DASAR (DIKDAS)' THEN a.TotalHonor
+        ELSE 
+            CASE
+                WHEN (a.pertemuanke IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)
+                      AND a.jumlah BETWEEN b.jumlahMHSAwalA AND b.JumlahMHSAkhirA) THEN 0
+                WHEN (a.pertemuanke IN (5,6,7,8,9,10,11,12,13,14,15,16)
+                      AND a.jumlah BETWEEN b.JumlahMhsAwalB AND b.JumlahMHSAkhirB) THEN 0
+                WHEN (a.pertemuanke IN (9,10,11,12,13,14,15,16)
+                      AND a.jumlah BETWEEN b.jumlahMHSAwalC AND b.JumlahMHSAkhirC) THEN 0
+                ELSE a.TotalHonor
+            END
+    END AS honorSKSDosen,
+    a.namadosen as namadosen,
+    MAX(ISNULL(a.keterangan, '')) as keterangan
+FROM
+    TblSementaraHonorDosen a
+INNER JOIN
+    TblKoutaHonor b ON b.TA = a.TA AND b.Semester = a.semester
+WHERE
+    a.TA = :TA
+    AND a.Semester = :Semester
+    AND a.fingerin >= :startDate
+    AND a.fingerin <= :endDate
+    AND a.idkampus = :idKampus
+    " . ($isProdiFilled ? "AND a.prodi = :prodi" : "") . "
+    " . ($isNamaFilled ? "AND a.NamaDosen = :NamaDosen" : "") . "
+    " . (!empty($iddosen) ? "AND a.iddosen = :iddosen" : "") . " 
+GROUP BY
+    a.fingerin,
+    a.lokasi,
+    a.prodi,
+    a.idDosen,
+    a.idmk,
+    a.matakuliah,
+    a.sks,
+    a.masuk,
+    a.keluar,
+    a.kelas,
+    a.jumlahtotal,
+    a.pertemuanke,
+    a.namadosen,
+    a.keterangan,
+    a.TotalHonor,
+    b.jumlahMHSAwalA, 
+    b.JumlahMHSAkhirA,
+    b.JumlahMhsAwalB,
+    b.JumlahMHSAkhirB,
+    b.jumlahMHSAwalC,
+    b.JumlahMHSAkhirC,
+    a.jumlah
+ORDER BY
+    a.idDosen ASC,
+    a.namadosen ASC,
+    a.idmk ASC,
+    a.matakuliah ASC,
+    a.fingerin ASC
+
 ", array_merge($whereClause),'prodi');
 
 //dd($whereClause);

@@ -9,7 +9,7 @@ class Authenticate
     public function handle($request, Closure $next)
     {
         if (!session()->has('userid')) {
-            return view('admin.login');
+            return redirect('/login')->with('message', 'Sesi Anda telah berakhir. Silakan login kembali.');
         }
 
         return $next($request);

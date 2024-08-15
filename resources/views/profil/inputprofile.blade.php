@@ -128,9 +128,7 @@
                     History Jabatan Fungsionoris </h5>
                 <div class="mb-3"></div>
                 <div class="content" id="fungsiContent">
-                    <form id="results">
-                        <button type="submit" class="btn btn-primary" id="fungsiBtn">Tambah</button>    
-                    </form>
+                    
                 </div>
             </div>
         </div>
@@ -158,9 +156,6 @@
                     <span class="toggle-symbol" id="sertifikasiToggle">+</span> Sertifikasi Dosen </h5>
                 <div class="mb-3"></div>
                 <div class="content" id="sertifikasiContent">
-                    <form id="results">
-                        <button type="submit" class="btn btn-primary" id="sertifikasiBtn">Tambah</button>    
-                    </form>
                 </div>
             </div>
         </div>
@@ -460,7 +455,7 @@
        if (searchQuery.length >= 4) {
            // Lakukan permintaan AJAX ke server untuk mencari Dosen
            $.ajax({
-               url: 'input/findDosen',
+               url: '/findDosen',
                method: 'GET',
                data: { term: searchQuery },
                success: function (data) {
@@ -691,7 +686,7 @@ function toggleContent(sectionId) {
                     $('#matkulBtn').click(function () {
                     var idDosen = $('#iddosen').val();
                     // Arahkan pengguna ke halaman tambahpendidikan.blade.php
-                    window.location.href = 'input/tambahmatakuliah?idDosen=' + idDosen;
+                    window.location.href = '/tambahmatakuliah?idDosen=' + idDosen;
                         });
                         $('.hapus-btn').click(function () {
                     var idPrimary = $(this).data('id');
@@ -769,7 +764,7 @@ function toggleContent(sectionId) {
                     console.log('id dosen : ', idDosen);
                     console.log('item no : ', itemNo);
                     // Arahkan pengguna ke halaman ubahpendidikan.blade.php dengan menyertakan ID yang sesuai
-                    window.location.href = 'input/ubahmatakuliah?idPrimary=' + idPrimary + '&idDosen=' + idDosen + '&itemNo=' + itemNo;
+                    window.location.href = '/ubahmatakuliah?idPrimary=' + idPrimary + '&idDosen=' + idDosen + '&itemNo=' + itemNo;
                 });
                 } else {
                     $('#matakuliahContent').html('<p>Data matakuliah tidak ditemukan.</p>');

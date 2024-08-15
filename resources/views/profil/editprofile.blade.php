@@ -289,13 +289,19 @@
                                         value="{{ $dosen->Kepangkatan ?? '' }}"readonly>
                                     </tr>
                                     <tr>
-                                        <td><label class="form-label">Honor Pokok Dosen</label></td>
+                                        <td><label class="form-label">Honor SKS S1</label></td>
                                         <td>
                                             <input type="text" class="form-control" name="honor"
-                                             value="{{ isset($dosen->HONORSKS) ? number_format($dosen->HONORSKS, 0, ',', '.') : '' }}" >
+                                             value="{{ isset($dosen->HONORSKS) ? number_format($dosen->HONORSKS, 0, ',', '.') : '' }}" readonly>
                                         </td>
                                     </tr>
-                                    
+                                    <tr>
+                                        <td><label class="form-label">Honor SKS S2</label></td>
+                                        <td>
+                                            <input type="text" class="form-control" name="honor"
+                                             value="{{ isset($dosen->HONORSKSS2) ? number_format($dosen->HONORSKSS2, 0, ',', '.') : '' }}" readonly>
+                                        </td>
+                                    </tr> 
                                 <tr>
                                     <td><label class="form-label">Tunjangan Pendidikan</label> </td>
                                     <td><input type="text" class="form-control"  name="tunjpendidikan" value="{{ $dosen->TUNJPENDIDIKAN ? number_format($dosen->TUNJPENDIDIKAN, 0, ',', '.') : '' }}" ></td>

@@ -416,6 +416,24 @@ public function simpan(Request $request)
         ]);
     }
 
+    // Cek apakah kelas sudah memiliki jadwal pada jam yang sama
+    $existingClassSchedule = DB::table('jadwalprimary')
+        ->where('kelas', $kelas)
+        ->where('HariJadwal', $harijadwal)
+        ->where('ta', $ta)
+        ->where('semester', $semester)
+        ->where('jammasuk', $jammasuk)
+        ->where('jamkeluar', $jamkeluar)
+        ->first();
+
+    if ($existingClassSchedule) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Kelas sudah memiliki jadwal belajar dari ' . $jammasuk . ' sampai ' . $jamkeluar,
+            'details' => $existingClassSchedule
+        ]);
+    }
+
     // Cek apakah dosen sudah memiliki jadwal mengajar idmk tersebut
     $existingIdmkSchedule = DB::table('jadwalprimary')
         ->where('iddosen', $iddosen)
@@ -486,7 +504,6 @@ public function simpan(Request $request)
 
     return response()->json(['status' => 'success']);
 }
-
 public function validateJadwal(Request $request)
 {
     $idprimary = $request->input('idprimary');
@@ -494,13 +511,41 @@ public function validateJadwal(Request $request)
 
     // Simpan data ke tabel jadwalprimary
     $affected = DB::table('jadwalprimary')
-        ->where('idprimary', $idprimary) // Menambahkan kondisi where
+        ->where('idprimary', $idprimary)
         ->update([
             'Validasi' => $validasi
         ]);
 
-    // Mengembalikan respons dalam format JSON
     if ($affected) {
+        // Ambil data yang sudah divalidasi untuk disimpan ke tabel JadwalDosenPrimary
+        $jadwal = DB::table('jadwalprimary')->where('idprimary', $idprimary)->first();
+        
+        if ($jadwal) {
+            DB::table('JadwalDosenPrimary')->insert([
+                'idkampus' => $jadwal->IDKAMPUS,
+                'idfakultas' => $jadwal->IDFAKULTAS,
+                'prodi' => $jadwal->PRODI,
+                'kurikulum' => $jadwal->KURIKULUM,
+                'TA' => $jadwal->TA,
+                'semester' => $jadwal->SEMESTER,
+                'itemNo' => $jadwal->ITEMNO,
+                'kelas' => $jadwal->KELAS,
+                'idMK' => $jadwal->IDMK,
+                'iddosen' => $jadwal->IDDOSEN,
+                'SK' => $jadwal->SK1, // atau sesuai dengan yang diinginkan
+                'idruang' => $jadwal->IDRUANG,
+                'JAMMASUK' => $jadwal->JAMMASUK,
+                'JAMKELUAR' => $jadwal->JAMKELUAR,
+                'nosilabus' => $jadwal->NOSILABUS,
+                'Chk' => $jadwal->Chk,
+                'HonorSKS' => $jadwal->HonorSKS,
+                'lastupdate' => now(),
+                'useridupdate' => $jadwal->useridupdate,
+                'hari' => $jadwal->Hari,
+                'harijadwal' => $jadwal->HariJadwal,
+            ]);
+        }
+
         return response()->json(['success' => true], 200);
     } else {
         return response()->json(['success' => false], 500);
@@ -563,6 +608,43 @@ public function validateAllByDay(Request $request)
         ->update(['Validasi' => $validasi]);
     
     if ($updated) {
+        // Ambil data yang sudah divalidasi untuk disimpan ke tabel JadwalDosenPrimary
+        $jadwals = DB::table('jadwalprimary')
+            ->where('idkampus', $idkampus)
+            ->where('prodi', $prodi)
+            ->where('idfakultas', $idfakultas)
+            ->where('ta', $ta)
+            ->where('semester', $semester)
+            ->where('harijadwal', $harijadwal)
+            ->where('Validasi', $validasi)
+            ->get();
+
+        foreach ($jadwals as $jadwal) {
+            DB::table('JadwalDosenPrimary')->insert([
+                'idkampus' => $jadwal->IDKAMPUS,
+                'idfakultas' => $jadwal->IDFAKULTAS,
+                'prodi' => $jadwal->PRODI,
+                'kurikulum' => $jadwal->KURIKULUM,
+                'TA' => $jadwal->TA,
+                'semester' => $jadwal->SEMESTER,
+                'itemNo' => $jadwal->ITEMNO,
+                'kelas' => $jadwal->KELAS,
+                'idMK' => $jadwal->IDMK,
+                'iddosen' => $jadwal->IDDOSEN,
+                'SK' => $jadwal->SK1, // atau sesuai dengan yang diinginkan
+                'idruang' => $jadwal->IDRUANG,
+                'JAMMASUK' => $jadwal->JAMMASUK,
+                'JAMKELUAR' => $jadwal->JAMKELUAR,
+                'nosilabus' => $jadwal->NOSILABUS,
+                'Chk' => $jadwal->Chk,
+                'HonorSKS' => $jadwal->HonorSKS,
+                'lastupdate' => now(),
+                'useridupdate' => $jadwal->useridupdate,
+                'hari' => $jadwal->Hari,
+                'harijadwal' => $jadwal->HariJadwal,
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Semua data untuk hari ini telah divalidasi.'
@@ -574,5 +656,96 @@ public function validateAllByDay(Request $request)
         ], 500);
     }
 }
+public function showReportJadwal (Request $request)
+    {
+       
+        $allIdKampus = DB::table('kampus')->select('idkampus', 'lokasi')->distinct()->get();
+        $allProdi = DB::table('prodifakultas')->select('idfakultas', 'prodi')->distinct()->get(); 
+        
+        return view('jadwal.reportjadwal',compact('allIdKampus','allProdi'));   
+    }
+    public function OrderbyReport(Request $request)
+    {
+        $idkampus = $request->input('idkampus');
+        $lokasi = $request->input('lokasi');
+        $prodi = $request->input('prodi');
+        $idfakultas = $request->input('id_fakultas');
+        $fakultas = $request->input('fakultas');
+        $ta = $request->input('ta');
+        $semester = $request->input('semester');
+        $orderby = $request->input('orderby') ?? 'harijadwal'; // Default to 'harijadwal' if not provided
+        session(['fakultas' => $fakultas]);
+        // Map numeric day values to day names
+        $results = DB::table('jadwalprimary')
+            ->join('matakuliah', 'jadwalprimary.idmk', '=', 'matakuliah.idmk')
+            ->join('dosen', 'jadwalprimary.iddosen', '=', 'dosen.iddosen')
+            ->leftJoin('dosen AS dosen2', 'jadwalprimary.iddosen2', '=', 'dosen2.iddosen')
+            ->leftJoin('dosen AS dosen3', 'jadwalprimary.iddosen3', '=', 'dosen3.iddosen') // Join kembali ke tabel dosen untuk dosen kedua
+            ->leftJoin('dosen AS dosen4', 'jadwalprimary.iddosen4', '=', 'dosen4.iddosen')
+            ->select(
+                'jadwalprimary.idprimary',
+                DB::raw("
+                CASE
+                    WHEN jadwalprimary.harijadwal = 1 THEN 'Senin'
+                    WHEN jadwalprimary.harijadwal = 2 THEN 'Selasa'
+                    WHEN jadwalprimary.harijadwal = 3 THEN 'Rabu'
+                    WHEN jadwalprimary.harijadwal = 4 THEN 'Kamis'
+                    WHEN jadwalprimary.harijadwal = 5 THEN 'Jumat'
+                    WHEN jadwalprimary.harijadwal = 6 THEN 'Sabtu'
+                    WHEN jadwalprimary.harijadwal = 7 THEN 'Minggu'
+                    ELSE 'Unknown'
+                END AS hari
+            "),
+                'jadwalprimary.harijadwal',
+                'jadwalprimary.kurikulum',
+                'jadwalprimary.idmk',
+                'matakuliah.matakuliah as matakuliah',
+                'jadwalprimary.sks',
+                'jadwalprimary.kelas',
+                'jadwalprimary.iddosen',
+                'dosen.nama as dosen',
+                'jadwalprimary.jammasuk',
+                'jadwalprimary.jamkeluar',
+                'jadwalprimary.idruang',
+                'jadwalprimary.gabungan',
+                'jadwalprimary.iddosen2',
+                'dosen2.nama AS nama_dosen2',
+                'jadwalprimary.iddosen3', 
+                'dosen3.nama AS nama_dosen3',
+                'jadwalprimary.SK2',
+                'jadwalprimary.iddosen4', 
+                'dosen4.nama AS nama_dosen4',
+                'jadwalprimary.SK3'
+            )
+            ->where('jadwalprimary.ta', $ta)
+            ->where('jadwalprimary.semester', $semester)
+            ->where('jadwalprimary.idkampus', $idkampus)
+            ->where('jadwalprimary.prodi', $prodi)
+            ->orderBy($orderby)
+            ->get();
+    
+        $allIdKampus = DB::table('kampus')->select('idkampus', 'lokasi')->distinct()->get();
+        $allProdi = DB::table('prodifakultas')->select('idfakultas', 'prodi')->distinct()->get();
+        $groupedResults = $results->groupBy($orderby)->map(function($group) {
+            return $group->map(function($item) {
+                return [
+                    $item->hari,
+                    $item->kurikulum,
+                    $item->idmk,
+                    $item->matakuliah,
+                    $item->sks,
+                    $item->kelas,
+                    $item->dosen,
+                    $item->nama_dosen2,
+                    $item->nama_dosen3,
+                    $item->nama_dosen4,
+                    $item->idruang,
+                    $item->gabungan
+                ];
+            })->toArray();
+        })->toArray();
 
-}
+        return view('jadwal.reportjadwal', compact('results', 'allIdKampus', 'allProdi','orderby','idkampus','fakultas',
+        'idfakultas','prodi','ta','semester','lokasi','groupedResults'));
+    }
+    }

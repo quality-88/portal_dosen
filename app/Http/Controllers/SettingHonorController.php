@@ -202,6 +202,54 @@ public function activateHonorPokok(Request $request)
     // Return a success response
     return response()->json(['success' => 'Honor Pokok updated successfully!']);
 }
+public function showSettingHonorS1()
+    {
+        // Ambil data jabatan dari database
+        $sethonor = DB::table('setHonorS1')->get();
+        foreach ($sethonor as $item) {
+            // Jika 'honors2' tidak kosong
+            if (!is_null($item->HonorS1)) {
+                $item->HonorS1 = number_format($item->HonorS1, 0, ',', '.');
+            }
+        }
+        // Kirimkan data jabatan ke view
+        return view('CMS.honorsksdosens1', compact('sethonor')); 
+    } 
+    public function simpanSettingHonorS1(Request $request)
+    {
+        $ta = $request->input('ta');
+        $semester = $request->input('semester');
+        $honors1 = $request->input('honors1');
+    
+        $honors1 = str_replace('.', ',', $honors1);
+    
+        // Insert data into the database
+        DB::table('setHonorS1')->insert([
+            'ta' => $ta,
+            'semester' => $semester,
+            'honors1' => $honors1
+        ]);
+    
+        // Send success message
+        return response()->json(['success' => 'Data berhasil ditambahkan!']);
+    }
+    public function activateHonorS1(Request $request)
+{
+    $ta = $request->input('ta');
+    $semester = $request->input('semester');
 
+    // Retrieve the 'HonorS2' values from the 'setHonorS2' table based on 'ta' and 'semester'
+    $honorS1Values = DB::table('setHonorS1')
+        ->where('ta', $ta)
+        ->where('semester', $semester)
+        ->value('HonorS1');
+
+    // Update the 'HONORSKSS2' column in the 'dosen' table with the retrieved values
+    DB::table('dosen')
+    ->update(['HONORSKS' => $honorS1Values]);
+
+    // Return a success response
+    return response()->json(['success' => 'HONORSKS updated successfully!']);
+}
 }
 

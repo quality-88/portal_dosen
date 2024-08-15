@@ -118,7 +118,7 @@
 
         // Mengatur font, ukuran, dan gaya font untuk informasi
         doc.setFontSize(25);
-        doc.text('Transkrip Nilai', 200, 100);
+        doc.text('Transkrip Nilai', 220, 100);
 
         // Menambahkan informasi data program studi, fakultas, TA/semester, dst.
         doc.setFont(undefined, 'normal'); // Mengatur teks kembali ke normal
@@ -182,7 +182,7 @@
         // Mengganti titik dengan koma untuk pemisah desimal
         var ipkFormatted = ipkString.replace('.', ',');
         // Menambahkan total SKS ke dalam data tabel
-        tableData.push(['','','JUMLAH KREDIT YANG DIAMBIL','', totalSKS, '',totalNilai]);
+        tableData.push(['','','JUMLAH KREDIT YANG DIAMBIL','', data.totalSKS, '',totalNilai]);
         tableData.push(['','','IP KAMULATIF','', '','',ipkFormatted]);
         // Menampilkan tabel dalam PDF
         var tableHeight = doc.autoTable.previous.finalY || startY + 4 * lineHeight; // Menyimpan tinggi tabel sebelumnya atau menggunakan nilai default

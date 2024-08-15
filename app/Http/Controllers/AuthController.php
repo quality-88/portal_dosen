@@ -14,29 +14,32 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {   
+        ini_set('max_execution_time', 300);
         session(['last_activity' => now()]);
+    
         $userid = $request->input('userid');
         $password = $request->input('password');
-
+    
         $user = DB::table('AllSMUsers')
             ->where('userid', $userid)
             ->where('password', $password)
             ->first();
-
+    
         if ($user) {
             // Simpan informasi pengguna dalam sesi
             session(['userid' => $user->userid, 'divisi' => $user->Divisi]);
+    
             $userAgent = $request->header('User-Agent');
             $browserSignature = sha1($userAgent);
             session(['browser_signature' => $browserSignature]);
-
+    
             // Redirect sesuai dengan divisi pengguna
             return redirect()->route($this->getDashboardRoute($user->Divisi));
         } else {
             return redirect()->route('login')->withErrors(['login' => 'Invalid credentials.']);
         }
     }
-
+    
     private function getDashboardRoute($divisi)
     {
         switch ($divisi) {
@@ -52,27 +55,30 @@ class AuthController extends Controller
              return 'dashboard';
               break;
 
-              case 'Ka Biro Akademik':
+            case 'Ka Biro Akademik':
                 return 'dashboard';
-                 break;
-                case 'Sekretariat':
-                    return 'dashboard';
-                     break;
-                case 'Kaprodi':
-                    return 'dashboard';
-                        break;
-                case 'Fungsionaris UQ':
-                  return 'dashboard';
-                 break;  
+                break;
+            case 'Sekretariat':
+                return 'dashboard';
+                break;
+            case 'Kaprodi':
+                return 'dashboard';
+                break;
+            case 'Fungsionaris UQ':
+                return 'dashboard';
+                break;  
             case 'Dosen':
                 return 'login';
                 break;
             case 'Yayasan':
                 return 'dashboard';
                 break;
-                case 'Marketing':
-                    return 'dashboard';
-                    break;
+            case 'Marketing':
+                return 'dashboard';
+                break;
+            case 'KEMAHASISWAAN':
+                return 'dashboard';
+                break;    
             default:
             return 'login';    
             
