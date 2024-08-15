@@ -769,7 +769,7 @@ function toggleContent(sectionId) {
                     console.log('id dosen : ', idDosen);
                     console.log('item no : ', itemNo);
                     // Arahkan pengguna ke halaman ubahpendidikan.blade.php dengan menyertakan ID yang sesuai
-                    window.location.href = '/ubahmatakuliah?idPrimary=' + idPrimary + '&idDosen=' + idDosen + '&itemNo=' + itemNo;
+                    window.location.href = 'input/ubahmatakuliah?idPrimary=' + idPrimary + '&idDosen=' + idDosen + '&itemNo=' + itemNo;
                 });
                 } else {
                     $('#matakuliahContent').html('<p>Data matakuliah tidak ditemukan.</p>');

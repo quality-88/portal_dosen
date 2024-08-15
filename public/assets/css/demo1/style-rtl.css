@@ -74,17 +74,13 @@
 }
 
 #resultList {
-max-height: 200px; /* Set a maximum height for the list */
-overflow-y: auto; /* Add a scrollbar when the list overflows */
-position: absolute;
- /* Make the list full-width */
-z-index: 100; /* Adjust the z-index to make sure the list appears above other elements */
-background-color: #ffffff; /* Set a background color */
-border-radius: 5px; /* Optional: Add border-radius for rounded corners */
-top: calc(100% + 10px); /* Position the resultList below the input field */
-left: 0; /* Align the left edge of resultList with the left edge of its containing block */
-padding: 0; /* Remove padding to align with the input field */
-margin: 0; /* Remove margin to align with the input field */
+  max-height: 200px; /* Set a maximum height for the list */
+  overflow-y: auto; /* Add a scrollbar when the list overflows */
+  position: absolute;
+  width: 50%; /* Make the list full-width */
+  z-index: 1000; /* Adjust the z-index to make sure the list appears above other elements */
+  background-color: #eff1f6; /* Set a background color */
+  border-radius: 5px; /* Optional: Add border-radius for rounded corners */
 }
 
 #resultList li {

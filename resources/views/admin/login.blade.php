@@ -83,7 +83,7 @@ License: For each use you must have a valid license purchased only from above li
 	</div>
 
 	<!-- core:js -->
-	<script src="{{ asset ('/assets/js/main.js') }}"></script>
+
 	<script src="{{ asset ('/assets/vendors/core/core.js') }}"></script>
 	<!-- endinject -->
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

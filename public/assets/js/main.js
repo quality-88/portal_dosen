@@ -3,7 +3,7 @@ let timeoutInMinutes = 20;
 
 function startSessionTimeout() {
   setTimeout(function() {
-    window.location.href = '/login';
+    window.location.href = 'https://portaluniversitasquality.ac.id:6923/portal/public/login';
   }, timeoutInMinutes * 60 * 1000);
 }
 

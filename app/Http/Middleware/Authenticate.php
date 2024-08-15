@@ -9,7 +9,7 @@ class Authenticate
     public function handle($request, Closure $next)
     {
         if (!session()->has('userid')) {
-            return redirect('/login');
+            return view('admin.login');
         }
 
         return $next($request);

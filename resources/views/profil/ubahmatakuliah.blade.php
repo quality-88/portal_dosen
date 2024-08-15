@@ -97,7 +97,7 @@ $('#idmk').on('input', function () {
        if (searchQuery.length >= 4) {
            // Lakukan permintaan AJAX ke server untuk mencari Dosen
            $.ajax({
-               url: '/searchMatkul',
+               url: '/input/ubahmatakuliah/searchMatkul',
                method: 'GET',
                data: { term: searchQuery },
                success: function (data) {

@@ -76,6 +76,28 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+#resultList {
+  max-height: 200px; /* Set a maximum height for the list */
+  overflow-y: auto; /* Add a scrollbar when the list overflows */
+  position: absolute;
+  width: 55%; /* Make the list full-width */
+  z-index: 1000; /* Adjust the z-index to make sure the list appears above other elements */
+  background-color: #ffffff; /* Set a background color */
+  border-radius: 5px; /* Optional: Add border-radius for rounded corners */
+}
+
+#resultList li {
+  padding: 8px; /* Add padding to each list item */
+  cursor: pointer; /* Change the cursor to a pointer for better user experience */
+  list-style: none; /* Remove default list styling */
+  border-bottom: 1px solid #ccc; /* Add a border between list items */
+}
+
+#resultList li:last-child {
+  border-bottom: none; /* Remove border from the last list item */
+}
+</style>
 <script>
     jQuery(document).ready(function ($) {
         // Initialize flatpickr for date fields
@@ -162,13 +184,13 @@ $('#idmk').on('input', function () {
 
     if (searchQuery.length >= 4) {
         // Lakukan permintaan AJAX ke server untuk mencari matakuliah
-        var selectedProdi = $('#prodi').val();
-        var selectedKurikulum = $('#kurikulum').val();
+        var prodi = $('#prodi').val();
+        var kurikulum = $('#kurikulum').val();
 
         $.ajax({
-            url: '/input/tambahmatkul/searchIdmk',
+            url: "{{ route('searchIdmk') }}",
             method: 'GET',
-            data: { term: searchQuery, prodi: selectedProdi, kurikulum: selectedKurikulum },
+            data: { term: searchQuery, prodi: prodi, kurikulum: kurikulum },
             success: function (data) {
                 var resultList = $('#resultList');
                 resultList.empty();
@@ -209,7 +231,6 @@ $(document).on('click', '#resultList li', function () {
 
     $('#resultList').hide();
 });
-
 </script>
 
 @endsection

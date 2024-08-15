@@ -15,7 +15,7 @@ class CheckLoginTime
 
         if (!is_null($lastActivity) && time() - $lastActivity > 12000) { // Sesuaikan dengan kebutuhan waktu timeout (dalam detik)
             // Sesuaikan dengan tindakan yang sesuai, contohnya mengarahkan ke halaman login
-            return redirect('/login')->with('message', 'Sesi Anda telah kadaluwarsa. Silakan login kembali.');
+            return view('admin.login')->with('message', 'Sesi Anda telah kadaluwarsa. Silakan login kembali.');
         }
 
         session()->put('last_activity', time());

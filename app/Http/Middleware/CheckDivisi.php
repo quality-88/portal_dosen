@@ -20,6 +20,6 @@ class CheckDivisi
         session(['user_division' => $userDivision]);
 
         return $next($request);
-        return redirect('/login')->with('error', 'Akses ditolak.');
+        return view('admin.login')->with('error', 'Akses ditolak.');
     }
 }

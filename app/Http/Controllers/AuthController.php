@@ -84,6 +84,6 @@ class AuthController extends Controller
         session()->forget(['userid', 'password', 'divisi']);
         // Hapus juga token CSRF
         csrf_token(); // Ini akan menghasilkan token CSRF baru
-        return redirect('/login');
+        return view('admin.login');
     }
 }

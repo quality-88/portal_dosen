@@ -12,7 +12,7 @@
         <div class="col-md-12 grid-margin stretch-card">
             <div class="card">
                 <div class="card-body">
-                    <div class ="row">
+                    <div class="row">
                         <div class="col-md-6">
                             <button onclick="downloadPDF()" type="button" class="btn btn-primary btn-icon-text mb-2 mb-md-0">Download PDF
                                 <i class="btn-icon-prepend" data-feather="printer"></i>
@@ -30,14 +30,14 @@
                 <div class="card-body">
                     <h6 class="card-title">Data Table</h6>
                     <div class="table-responsive">
-                        @if(isset($data['result1']) && isset($data['result2']) && isset($data['missingCourses']) 
-                        && (count($data['result1']) > 0 || count($data['result2']) > 0 || count($data['missingCourses']) > 0))
-                        <table id="myExportableTable" class="table" font-size="10">
+                        @if(isset($data['allCourses']) && count($data['allCourses']) > 0)
+                        <table id="myExportableTable" class="table">
                             <thead>
                                 <tr>
                                     <th>No</th>
                                     <th>Kode MK</th>
                                     <th>Mata Kuliah</th>
+                                    <th>TA</th>
                                     <th>Semester</th>
                                     <th>SKS</th>
                                     <th>Nilai Akhir</th>
@@ -47,40 +47,31 @@
                             <tbody>
                                 @php
                                 $no = 1;
-                            @endphp
-                                @foreach($data['result1'] as $result)
-                                    <tr>
-                                        <td>{{ $no++ }}</td>
-                                        <td>{{ $result->idmk }}</td>
-                                        <td>{{ $result->MATAKULIAH }}</td>
-                                        <td>{{ $result->MatakuliahSemester }}</td>
-                                        <td>{{ $result->SKS }}</td>
-                                        <td>{{ $result->NilaiAkhir }}</td>
-                                        <td>{{ $result->kali }}</td>
-                                    </tr>
-                                @endforeach
-                                @foreach($data['result2'] as $result)
-                                    <tr>
-                                        <td>{{ $no++ }}</td>
-                                        <td>{{ $result->idmk }}</td>
-                                        <td>{{ $result->MATAKULIAH }}</td>
-                                        <td>{{ $result->SEMESTER }}</td>
-                                        <td>{{ $result->SKS }}</td>
-                                        <td>{{ $result->NilaiAkhir }}</td>
-                                        <td>{{ $result->kali }}</td>
-                                    </tr>
-                                @endforeach
-                                @foreach($data['missingCourses'] as $result)
-                                    <tr>
-                                        <td>{{ $no++ }}</td>
-                                        <td>{{ $result['idmk'] }}</td>
-                                        <td>{{ $result['matakuliah'] }}</td>
-                                        <td>{{ $result['semester'] }}</td>
-                                        <td>{{ $result['sks'] }}</td>
-                                        <td>{{ $result['nilaiAkhir'] }}</td>
-                                        <td>{{ $result['kali'] }}</td>
-                                    </tr>
-                                @endforeach
+                                @endphp
+                                  @foreach ($data['allCourses'] as $course)
+                                  <tr>
+                                      <td>{{ $no++ }}</td>
+                                      <td>{{ $course->idmk ?? '' }}</td>
+                                      <td>{{ $course->MATAKULIAH ?? '' }}</td>
+                                      <td>
+                                          {{ $course->TA ?? '' }}/{{ $course->SEMESTER ?? '' }}
+                                      </td> <!-- Display TA/Semester -->
+                                      <td>{{ $course->MatakuliahSemester ?? '' }}</td>
+                                      <td>{{ $course->SKS ?? '' }}</td>
+                                      <td>{{ $course->NilaiAkhir ?? '' }}</td>
+                                      <td>{{ $course->kali ?? '' }}</td>
+                                  </tr>
+                                  @endforeach
+                                <tr>
+                                    <td colspan="4"><strong>Total SKS</strong></td>
+                                    <td><strong>{{ $data['totalSKS'] }}</strong></td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4"><strong>IPK</strong></td>
+                                    <td colspan="3"><strong>{{ number_format($data['IPK'], 2) }}</strong></td>
+                                </tr>
+                                
                             </tbody>
                         </table>
                         @endif
@@ -121,7 +112,7 @@
         doc.setFontSize(30);
         doc.setFont("Arial");
         doc.setFont(undefined, 'bold'); // Mengatur teks menjadi tebal
-        doc.setTextColor(0, 0, 0); // Mengatur warna teks menjadi hitam
+        doc.setTextColor(0, 0, 0); // Mengatur warna teks menjadi hitam`
         doc.text(`Universitas Quality`, 180, 40);
        
 
@@ -153,63 +144,32 @@
 
        
         var tableData = [];
-        var headers = ['No', 'IDMK', 'Mata Kuliah', 'SMT', 'SKS', 'Nilai Akhir', 'K x AP*'];
+        var headers = ['No', 'IDMK', 'Mata Kuliah','TA', 'SMT', 'SKS', 'Nilai Akhir', 'K x AP*'];
 
         // Menambahkan header ke dalam data tabel
         tableData.push(headers);
         var no = 1;
         // Menambahkan data dari result1 ke dalam tabel
-        @foreach ($data['result1'] as $result)
+        @foreach ($data['allCourses'] as $course)
         tableData.push([
-             no++, // Nomor
-            '{{ $result->idmk }}', // IDMK
-            '{{ $result->MATAKULIAH }}', // Mata Kuliah
-            '{{ $result->MatakuliahSemester }}', // Semester
-            '{{ $result->SKS }}', // SKS
-            '{{ $result->NilaiAkhir }}', // Nilai Akhir
-            '{{ $result->kali }}', // K x AP*
-        ]);
+            no++,
+            '{{ $course->idmk }}',
+            '{{ $course->MATAKULIAH }}',
+            ' {{ $course->TA ?? '' }}/{{ $course->SEMESTER ?? '' }}',
+            '{{ $course->MatakuliahSemester }}',
+            '{{ $course->SKS }}',
+            '{{ $course->NilaiAkhir }}',
+            '{{ $course->kali }}',
+         ]);
         @endforeach
 
-        // Menambahkan data dari result2 ke dalam tabel
-        @foreach ($data['result2'] as $result)
-        tableData.push([
-             no++, // Nomor
-            '{{ $result->idmk }}', // IDMK
-            '{{ $result->MATAKULIAH }}', // Mata Kuliah
-            '{{ $result->SEMESTER }}', // Semester
-            '{{ $result->SKS }}', // SKS
-            '{{ $result->NilaiAkhir }}', // Nilai Akhir
-            '{{ $result->kali }}', // K x AP*
-        ]);
-        @endforeach
 
-        // Menambahkan data dari missingCourses ke dalam tabel
-        @foreach ($data['missingCourses'] as $result)
-        tableData.push([
-             no++, // Nomor
-            '{{ $result['idmk'] }}', // IDMK
-            '{{ $result['matakuliah'] }}', // Mata Kuliah
-            '{{ $result['semester'] }}', // Semester
-            '{{ $result['sks'] }}', // SKS
-            '{{ $result['nilaiAkhir'] }}', // Nilai Akhir
-            '{{ $result['kali'] }}', // K x AP*
-        ]);
-        @endforeach
-
-        // Menghitung total SKS yang dimiliki
         var totalSKS = 0;
-        @foreach ($data['result1'] as $result)
-        if ('{{ $result->NilaiAkhir }}' !== null) {
-            totalSKS += {{ $result->SKS }};
+        @foreach ($data['allCourses'] as $course)
+        if ('{{ $course->NilaiAkhir }}' !== null) {
+            totalSKS += {{ $course->SKS }};
         }
         @endforeach
-        @foreach ($data['result2'] as $result)
-        if ('{{ $result->NilaiAkhir }}' !== null) {
-            totalSKS += {{ $result->SKS }};
-        }
-        @endforeach
-
         var totalNilai = data.totalNilai;
         var ipk =data.IPK;
         var ipkString = ipk.toFixed(2);
@@ -238,7 +198,8 @@
                 3: { cellWidth: 30 },
                 4: { cellWidth: 30 },
                 5: { cellWidth: 30 },
-                6: { cellWidth: 30 }
+                6: { cellWidth: 30 },
+                7: { cellWidth: 30 }
             },
             headerStyles: { fillColor: [255, 255, 255] },
             didDrawPage: function (data) {
@@ -330,4 +291,5 @@
     }
 
 </script>
+
 @endsection

@@ -351,8 +351,6 @@ public function editProfile(Request $request)
         'passfoto' => $data['passfoto'],
         'serdos' => $data['serdos'],
     ]);
-
-
     // Redirect kembali ke halaman dashboard atau halaman yang sesuai
     return response()->json(['success' => 'Data berhasil disimpan!']);
   
@@ -1571,5 +1569,122 @@ public function editHibah(Request $request)
    ]);
    
    return response()->json(['success' => 'Data berhasil diperbarui.']);
+}
+
+//tambah dosen
+public function showAddProfile()
+{
+    // Fetch all necessary data for the form
+    $allJabatan = DB::table('jabatan')->select('itemno', 'jabatan')->distinct()->get(); 
+    $allHome = DB::table('TblHomeBase')->select('homebase', 'nama')->distinct()->get(); 
+    $allKampus = DB::table('kampus')->select('idkampus', 'lokasi')->distinct()->get();
+    $allJenjang = DB::table('JENJANGAKADEMIK')->select('itemno', 'jenjangakademik')->distinct()->get();
+    $allGolongan = DB::table('golongandosen')->select('golongan', 'keterangan as kepangkatan')->distinct()->get();
+    $allAktifan = DB::table('StatusDosenKampus')->select('statusdosen', 'keterangan')->distinct()->get();
+    $allGoldarah = DB::table('GolonganDarah')->select('golongandarah', 'keterangan')->distinct()->get();
+    $allAgama = DB::table('agama')->select('agama', 'keterangan')->distinct()->get();
+    $allJabat = DB::table('TblAkademik')->select('idprimary', 'jabatanakademik')->distinct()->get();
+    $allJenis = DB::table('JenisDosen')->select('idprimary', 'nama')->distinct()->get();
+
+    // Get the highest existing iddosen with 7 digits and increment it by 1
+    $highestIdDosenRecord = DB::table('dosen')
+        ->select('iddosen')
+        ->whereRaw('LEN(iddosen) = 7')
+        ->orderBy('iddosen', 'desc')
+        ->first();
+
+    // Check if there's an existing record and set the newIdDosen accordingly
+    if ($highestIdDosenRecord) {
+        $newIdDosen = (int)$highestIdDosenRecord->iddosen + 1;
+    } else {
+        $newIdDosen = 1000000; // Starting value if no such iddosen exists
+    }
+    $highestHonors = DB::table('dosen')
+        ->select(DB::raw('MAX(honorsks) as highestHonorsks'), DB::raw('MAX(honorskss2) as highestHonorskss2'))
+        ->first();
+       // Format honorsks and honorskss2 without decimal places
+       $formattedHonorsks = number_format($highestHonors->highestHonorsks, 0, ',', '.');
+       $formattedHonorskss2 = number_format($highestHonors->highestHonorskss2, 0, ',', '.');
+
+    // Prepare the default data for the new form
+    $dosen = [
+        'iddosen' => $newIdDosen,
+        'idfp' => $newIdDosen,
+        'iddosen2' => $newIdDosen,
+        'loginusername' => $newIdDosen,
+    ];
+    //dd($dosen);
+    // Pass all data to the view
+    return view('profil.tambahdosen', compact(
+        'newIdDosen', 'formattedHonorsks', 'formattedHonorskss2', 'allJabatan', 'allHome', 'allKampus', 'allJenjang', 
+        'allGolongan', 'allAktifan', 'allGoldarah', 'allAgama', 'allJabat', 'allJenis'
+    ));
+   
+}
+
+public function addProfile(Request $request)
+{
+    $data = $request->all();
+    //dd($data);
+    $honors2 = str_replace(',', '.', str_replace('.', '', $data['honors2']));
+    $honor = str_replace(',', '.', str_replace('.', '', $data['honor']));
+    // Simpan data ke dalam tabel dosen
+    DB::table('dosen')
+    ->insert([
+        'iddosen'=>$data['iddosen'],
+        'nama' => $data['nama'],
+        'idfp' => $data['idfp'],
+        'namaoutput' => $data['namaoutput'],
+        'namagelar' => $data['namagelar'],
+        'gd' => $data['gd'],
+        'gb' => $data['gb'],
+        'tgllahir' => date('Y-m-d', strtotime($data['tanggallahir'])),
+        'tempatlahir' => $data['tempatlahir'],
+        'jeniskelamin' => $data['jeniskelamin'],
+        'goldarah' => $data['goldarah'],
+        'AGAMA' => $data['agama'],
+        'alamat' => $data['alamat'],
+        'telepon' => $data['telepon'],
+        'hp' => $data['handphone'],
+        'emaildosen' => $data['Email'],
+        'emailpribadi' => $data['emailpribadi'],
+        'noacbank' => $data['nomor_rek'],
+        'noktp' => $data['nik'],
+        'npwp' => $data['npwp'],
+        'ketenagakerjaan' => $data['ketenagakerjaan'],
+        'kesehatan' => $data['kesehatan'],
+        'relationshipstatus' => $data['relationship_status'],
+        'jlhtanggungan' => $data['jlhtanggungan'],
+        'namaibu' => $data['namaibu'],
+        'loginusername' => $data['username'],
+        'loginpassword' => $data['password'],
+        'nidnntbdos' => $data['nidn'],
+        'statusjabatan' => $data['jabatan'],
+        'tglgabung' => date('Y-m-d', strtotime($data['tanggalgabung'])),
+        'homebase' => $data['homebase'],
+        'asalkota' => $data['lokasi'],
+        'jenjangakademik' => $data['jenjang'],
+        'jabatanakademik' => $data['jabat'],
+        'golongan' => $data['golongan'],
+        'kepangkatan' => $data['kepangkatan'],
+        'honorsks' => $honor,
+        'HONORSKSS2' => $honors2,
+        'TMTdosen' => date('Y-m-d', strtotime($data['tmt'])),
+        'tunjpendidikan' => $data['tunjpendidikan'],
+        'tunjakademik' => $data['tunjakademik'],
+        'statusdosenaktif' => $data['aktifan'],
+        'nip' => $data['nip'],
+        'sk_dosen' => $data['skdosen'],
+        'SKKepangkatan' => $data['sk_kepangkatan'],
+        'SKPengangkatan'=>$data['sk_pengangkatan'],
+        'Ijazah' => $data['ijazah'],
+        'cv' => $data['cv'],
+        'ktp' => $data['ktp'],
+        'passfoto' => $data['passfoto'],
+        'serdos' => $data['serdos'],
+    ]);
+    // Redirect kembali ke halaman dashboard atau halaman yang sesuai
+    return response()->json(['success' => 'Data berhasil disimpan!']);
+  
 }
 }

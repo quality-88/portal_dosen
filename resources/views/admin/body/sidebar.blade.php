@@ -44,7 +44,7 @@
                             <a class="nav-link" href="{{ route('showSettingHonor') }}">Set Honor SKS DOSEN S2</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showTunjAkademik') }}">Set Tunjangan Akademik</a>
+                            <a class="nav-link" href="{{ route('showTunjAkademik') }}">Set tunjangan Akademik Dosen</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('showLevelDosen') }}">Level Dosen</a>
@@ -94,11 +94,33 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('showPPD') }}">Rekap Dosen Aktif</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showAddProfile') }}">Tambah Dosen</a>
+                        </li>
                     </ul>
                 </div>
             </li>
             @endif
-
+            @if(in_array($userDivision, ['Biro Akademik', 'Administrator','Yayasan','Sekretariat','Ka Biro Akademik']))
+            <li class="nav-item nav-category">Jadwal</li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="collapse" href="#jadwal" role="button" aria-expanded="false" aria-controls="jadwal">
+                    <i class="link-icon" data-feather="book-open"></i>
+                    <span class="link-title">Jadwal Kuliah</span>
+                    <i class="link-arrow" data-feather="chevron-down"></i>
+                </a>
+                <div class="collapse" id="jadwal">
+                    <ul class="nav sub-menu">
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showJadwal') }}">Input Jadwal</a>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </li>
+            @endif
+            
             <!-- CMS Section -->
             @if($userDivision == 'Administrator')
             <li class="nav-item nav-category">CMS</li>
@@ -310,7 +332,7 @@
                             <a class="nav-link" href="{{ route('showDataCalonMahasiswa') }}">Calon Mahasiswa S1</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showDataCalonMahasiswas2') }}">Calon Mahasiswa S2</a>
+                            <a class="nav-link" href="{{ route('showDataCalonMahasiswas2') }}">Calon Mahasiswa S1</a>
                         </li>
                     </ul>
                 </div>

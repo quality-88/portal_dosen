@@ -327,6 +327,7 @@ public function showKonversiNilai (Request $request)
 }
 public function cetakTranskripNilai(Request $request)
 {
+    // Extract session data
     $mahasiswa = session('mahasiswa');
     $nama = $mahasiswa->NAMA;
     $idKampus = $mahasiswa->IDKAMPUS;
@@ -339,112 +340,56 @@ public function cetakTranskripNilai(Request $request)
     $namaDosen = $mahasiswa->NamaDosen;
     $alamat = $mahasiswa->Alamat;
 
+    // Get input data
     $npm = $request->input('npm');
     $ta = $request->input('ta');
     $semester = $request->input('semester');
-    session(['semester' => $semester]);
-    session(['ta' => $ta]); 
-    session(['npm' => $npm]);
-    $urut=1;
+    session(['semester' => $semester, 'ta' => $ta, 'npm' => $npm]);
+
+    // Fetch data from database
     $result1 = DB::select("
-    WITH CTE AS (
-        SELECT 
-            b.NPM,
-            b.IDKAMPUS,
-            b.PRODI,
-            b.kurikulum,
-            b.TA,
-            b.SEMESTER,
-           MAX(b.idmk) AS idmk,
-            MAX(a.MATAKULIAH) AS MATAKULIAH,
-            b.SKS,
-            a.SEMESTER AS MatakuliahSemester,
-            b.NilaiAkhir,
-            CASE 
-                WHEN c.NilaiAngka IS NOT NULL THEN c.NilaiAngka * b.SKS 
-                ELSE 0 
-            END AS kali,
-            CONCAT(b.TA, b.SEMESTER) AS TASemester,
-            MAX(b.JumlahBobotNilai) AS JumlahBobotNilai, -- Menambahkan JumlahBobotNilai ke dalam fungsi agregat MAX()
-            ROW_NUMBER() OVER (PARTITION BY b.idmk ORDER BY c.NilaiAngka DESC) AS rn
-        FROM 
-            krsdetail AS b
-        JOIN 
-            matakuliah AS a ON b.IdMK = a.idmk
-        LEFT JOIN 
-            SettingNilai AS c ON c.NilaiHuruf = b.NilaiAkhir
-        WHERE 
-            b.npm = '$npm'
-        GROUP BY 
-            b.NPM,
-            b.IDKAMPUS,
-            b.PRODI,
-            b.kurikulum,
-            b.TA,
-            b.SEMESTER,
-            b.idmk,
-            b.SKS,
-            a.SEMESTER,
-            b.NilaiAkhir,
-            c.NilaiAngka,
-            CONCAT(b.TA, b.SEMESTER) -- Diperlukan karena digunakan dalam SELECT
-    )
-    SELECT 
-        NPM,
-        IDKAMPUS,
-        PRODI,
-        kurikulum,
-        TA,
-        SEMESTER,
-        idmk,
-        MATAKULIAH,
-        SKS,
-        MatakuliahSemester,
-        NilaiAkhir,
-        kali,
-        TASemester,
-        JumlahBobotNilai
-    FROM 
-        CTE
-    WHERE 
-        rn = 1
-");
+        WITH CTE AS (
+            SELECT 
+                b.NPM, b.IDKAMPUS, b.PRODI, b.kurikulum, b.TA as TA, b.SEMESTER as SEMESTER,
+                MAX(b.idmk) AS idmk, MAX(a.MATAKULIAH) AS MATAKULIAH, b.SKS as SKS,
+                a.SEMESTER AS MatakuliahSemester, b.NilaiAkhir,
+                CASE WHEN c.NilaiAngka IS NOT NULL THEN c.NilaiAngka * b.SKS ELSE 0 END AS kali,
+                CONCAT(b.TA, b.SEMESTER) AS TASemester,
+                MAX(b.JumlahBobotNilai) AS JumlahBobotNilai,
+                ROW_NUMBER() OVER (PARTITION BY b.idmk ORDER BY c.NilaiAngka DESC) AS rn
+            FROM krsdetail AS b
+            JOIN matakuliah AS a ON b.IdMK = a.idmk
+            LEFT JOIN SettingNilai AS c ON c.NilaiHuruf = b.NilaiAkhir
+            WHERE b.npm = '$npm'
+            GROUP BY b.NPM, b.IDKAMPUS, b.PRODI, b.kurikulum, b.TA, b.SEMESTER,
+                     b.idmk, b.SKS, a.SEMESTER, b.NilaiAkhir, c.NilaiAngka,
+                     CONCAT(b.TA, b.SEMESTER)
+        )
+        SELECT NPM, IDKAMPUS, PRODI, kurikulum, TA, SEMESTER, idmk, MATAKULIAH, SKS,
+               MatakuliahSemester, NilaiAkhir, kali, TASemester, JumlahBobotNilai
+        FROM CTE
+        WHERE rn = 1
+    ");
 
-//dd($result1);
-   //$result1 = DB::table('krsdetail as b')
-   //->selectRaw('DISTINCT ROW_NUMBER() OVER (ORDER BY b.Npm) AS Urut')
-   //->select('b.NPM', 'b.IDKAMPUS', 'b.PRODI', 'b.kurikulum', 'b.TA', 'b.SEMESTER', 'b.idmk', 'a.MATAKULIAH', 'b.SKS',
-   //    'a.SEMESTER', 'b.NilaiAkhir', DB::raw('c.NilaiAngka * a.SKS AS kali'), DB::raw("CONCAT(b.TA, b.SEMESTER)"),
-   //    'b.JumlahBobotNilai')
-   //->join('matakuliah as a', 'b.IdMK', '=', 'a.idmk')
-   //->join('SettingNilai as c', 'c.NilaiHuruf', '=', 'b.NilaiAkhir')
-   //->where('b.npm',$npm)
-   //->orderBy('b.semester', 'asc')
-   //->get();
-    // Query kedua
     $result2 = DB::table('krsm as b')
-    ->select('b.npm', 'b.IDKAMPUS', 'b.PRODI', 'b.kurikulum', 'b.TA', 'b.SEMESTER', 'b.idmk', 'a.MATAKULIAH', 'b.SKS',
-        'a.SEMESTER', 'b.NilaiAkhir', DB::raw('c.NilaiAngka * a.SKS AS kali'), DB::raw("CONCAT(b.TA, '1') as TASemester"),
-        'b.JumlahBobotNilai')
-    ->selectRaw('ROW_NUMBER() OVER (PARTITION BY b.idmk ORDER BY c.NilaiAngka DESC) AS rn') // Menambahkan window function
-    ->join('matakuliah as a', 'b.IdMK', '=', 'a.idmk')
-    ->join('settingnilai as c', 'c.nilaihuruf', '=', 'b.nilaiakhir')
-    ->where('b.npm', $npm)
-    ->whereNotNull('b.nilaiakhir')
-    ->orderBy('b.semester', 'asc')
-    ->get();
+        ->select('b.npm', 'b.IDKAMPUS', 'b.PRODI', 'b.kurikulum', 'b.TA as TA', 'b.SEMESTER as SEMESTER', 'b.idmk', 'a.MATAKULIAH as MATAKULIAH',
+         'b.SKS as SKS',
+                 'a.SEMESTER as MatakuliahSemester', 'b.NilaiAkhir', DB::raw('c.NilaiAngka * a.SKS AS kali'), 
+                 DB::raw("CONCAT(b.TA, '1') as TASemester"),
+                 'b.JumlahBobotNilai')
+        ->selectRaw('ROW_NUMBER() OVER (PARTITION BY b.idmk ORDER BY c.NilaiAngka DESC) AS rn')
+        ->join('matakuliah as a', 'b.IdMK', '=', 'a.idmk')
+        ->join('settingnilai as c', 'c.nilaihuruf', '=', 'b.nilaiakhir')
+        ->where('b.npm', $npm)
+        ->whereNotNull('b.nilaiakhir')
+        ->orderBy('b.semester', 'asc')
+        ->get();
 
-// Filter untuk hanya mempertahankan baris pertama (nilai tertinggi) dari setiap idmk
-$result2 = collect($result2)->filter(function ($item) {
-    return $item->rn == 1;
-})->values()->all();
+    $result2 = collect($result2)->filter(function ($item) {
+        return $item->rn == 1;
+    })->values()->all();
 
-        foreach ($result2 as $result) {
-            $result->Urut = $urut; // Menambahkan nomor urut pada setiap baris
-            $urut++; // Menaikkan nomor urut
-        }
-
-        
+    // Fetch additional data
     $wali = DB::table('mahasiswa')
         ->select('mahasiswa.iddosen', 'dosen.nama as nama')
         ->join('dosen', 'dosen.iddosen', '=', 'mahasiswa.iddosen')
@@ -457,99 +402,87 @@ $result2 = collect($result2)->filter(function ($item) {
         ->where('ProdiFakultas.prodi', $prodi)
         ->get();
 
-    // Mendapatkan mata kuliah yang tidak ada pada result1 dan result2 dari tabel prodimk
     $missingCourses = DB::table('prodimk')
-    ->select('prodimk.sks', 'matakuliah.matakuliah', 'prodimk.semester', 'prodimk.idmk')
-    ->join('matakuliah', 'prodimk.idmk', '=', 'matakuliah.idmk')
-    ->where('prodimk.kurikulum', $kurikulum)
-    ->where('prodimk.IDKAMPUS', $idKampus)
-    ->where('prodimk.prodi',$prodi)
-    ->distinct()
-    ->orderBy('prodimk.semester', 'asc')
-    ->get();
-   
-// Convert $result1 to collection
-$result1 = collect($result1);
+        ->select('prodimk.sks as SKS', 'matakuliah.matakuliah as MATAKULIAH', 'prodimk.semester as MatakuliahSemester', 'prodimk.idmk')
+        ->join('matakuliah', 'prodimk.idmk', '=', 'matakuliah.idmk')
+        ->where('prodimk.kurikulum', $kurikulum)
+        ->where('prodimk.IDKAMPUS', $idKampus)
+        ->where('prodimk.prodi', $prodi)
+        ->distinct()
+        ->orderBy('prodimk.semester', 'asc')
+        ->get();
 
-// Convert $result2 to collection
-$result2 = collect($result2);
-//dd($result2);
-    // Menyimpan mata kuliah yang tidak ada pada result1 dan result2
+    // Convert to collections
+    $result1 = collect($result1);
+    $result2 = collect($result2);
+    $missingCourses = collect($missingCourses);
+    //dd($missingCourses);
+    // Prepare missing courses
     $missingCourseData = [];
     foreach ($missingCourses as $course) {
-        // Periksa apakah mata kuliah tidak ada di result1 atau result2
-        $existsInResult1 = $result1->where('idmk', $course->idmk)->count() > 0;
-        $existsInResult2 = $result2->where('idmk', $course->idmk)->count() > 0;
-        if (!$existsInResult1 && !$existsInResult2) {
-            $missingCourseData[] = [
-                'sks' => $course->sks,
-                'matakuliah' => $course->matakuliah,
-                'semester' => $course->semester,
-                'idmk' => $course->idmk,
-                'nilaiAkhir' => '', // Set nilai akhir menjadi kosong
-                'kali' => '', // Set kali menjadi kosong
-               
-            ];
-        }
+    // Print out the structure for debugging
+    // dd($course);
+    
+    // Verify the property names
+    $MatakuliahSemester = isset($course->MatakuliahSemester) ? $course->MatakuliahSemester : '';
+    $TA = isset($course->TA) ? $course->TA : '';
+    $SEMESTER = isset($course->SEMESTER) ? $course->SEMESTER : '';
+    $existsInResult1 = $result1->where('idmk', $course->idmk)->count() > 0;
+    $existsInResult2 = $result2->where('idmk', $course->idmk)->count() > 0;
+    
+    if (!$existsInResult1 && !$existsInResult2) {
+        $missingCourseData[] = (object) [
+            'SKS' => $course->SKS,
+            'MATAKULIAH' => $course->MATAKULIAH,
+            'MatakuliahSemester' => $MatakuliahSemester,  // Adjusted property name
+            'idmk' => $course->idmk,
+            'NilaiAkhir' => '',
+            'kali' => '',
+        ];
     }
-    $totalSKS = 0;
-    foreach ($result1 as $result) {
-        if ($result->NilaiAkhir !== null) {
-            $totalSKS += $result->SKS;
-        }
-    }
+}
 
-    // Hitung total SKS yang memiliki nilai dari result2
-    foreach ($result2 as $result) {
-        if ($result->NilaiAkhir !== null) {
-            $totalSKS += $result->SKS;
-        }
-    }
-    $totalNilaiResult1 = 0;
-    foreach ($result1 as $result) {
-        if ($result->NilaiAkhir !== null) {
-            $totalNilaiResult1 += $result->kali;
-        }
-    }
-
-    $totalNilaiResult2 = 0;
-    foreach ($result2 as $result) {
-        if ($result->NilaiAkhir !== null) {
-            $totalNilaiResult2 += $result->kali;
-        }
-    }
+    // Calculate total SKS and total nilai
+    $totalSKS = $result1->sum('SKS') + $result2->sum('SKS');
+    $totalNilaiResult1 = $result1->sum('kali');
+    $totalNilaiResult2 = $result2->sum('kali');
     $totalNilai = $totalNilaiResult1 + $totalNilaiResult2;
     $IPK = $totalSKS != 0 ? $totalNilai / $totalSKS : 0;
-    //dd($ipk);
-// Menggabungkan data mata kuliah yang tidak ada pada result1 dan result2 ke dalam data
-$data = [
-    'TA' => session('ta'),
-    'semester' => session('semester'),
-    'prodi' => $prodi,
-    'idKampus' => $idKampus,
-    'lokasi' => $lokasi,
-    'nama' => $nama,
-    'npm' => session('npm'),
-    'idFakultas' => $idFakultas,
-    'fakultas' => $fakultas,
-    'kurikulum' => $kurikulum,
-    'tipeKelas' => $tipeKelas,
-    'namaDosen' => $namaDosen,
-    'alamat' => $alamat,
-    'result1' => $result1,
-    'result2' => $result2,
-    'wali' => $wali,
-    'kaprodi' => $kaprodi,
-    'missingCourses' => $missingCourseData,
-    'totalSKS' => $totalSKS,
-    'totalNilai' => $totalNilai,
-    'IPK' => $IPK,
-];
 
-//dd($wali,$kaprodi);
-return view('mahasiswa.konversi.viewtranskripnilai', compact('data','result1','result2','missingCourses','wali','kaprodi'));
+    // Merge and sort data by semester
+    $allCourses = $result1->merge($result2)->merge($missingCourseData);
+    $allCourses = $allCourses->sortBy('MatakuliahSemester')->values();
+    //dd($allCourses);
+    // Prepare data for view
+    $data = [
+        'TA' => session('ta'),
+        'semester' => session('semester'),
+        'prodi' => $prodi,
+        'idKampus' => $idKampus,
+        'lokasi' => $lokasi,
+        'nama' => $nama,
+        'npm' => session('npm'),
+        'idFakultas' => $idFakultas,
+        'fakultas' => $fakultas,
+        'kurikulum' => $kurikulum,
+        'tipeKelas' => $tipeKelas,
+        'namaDosen' => $namaDosen,
+        'alamat' => $alamat,
+        'result1' => $result1,
+        'result2' => $result2,
+        'missingCourses' => $missingCourses,
+        'wali' => $wali,
+        'kaprodi' => $kaprodi,
+        'allCourses' => $allCourses,
+        'totalSKS' => $totalSKS,
+        'totalNilai' => $totalNilai,
+        'IPK' => $IPK,
+    ];
 
+    return view('mahasiswa.konversi.viewtranskripnilai', compact('data', 'allCourses', 'wali', 'kaprodi'));
 }
+
+
 
 public function showTambahKonversi(Request $request)
 {

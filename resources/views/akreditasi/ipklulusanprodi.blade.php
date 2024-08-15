@@ -7,10 +7,10 @@
         <div class="col-md-12 grid-margin stretch-card">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="mb-4">IPK LULUSAN /PRODI</h4>
+                    <h4 class="mb-4">RINCIAN LULUSAN /PRODI</h4>
                     <form class="row g-5" action="{{ route('HitungIPK') }}" method="POST">
                         @csrf
-                        <div class="col-md-4">
+                        <div class="col-md-2">
                             <label for="universitas" class="form-label">Universitas</label>
                             <select class="form-select" id="universitas" name="universitas" required>
                                 <option value="">Choose .....</option>
@@ -27,11 +27,18 @@
                                 @endforeach
                             </select>                            
                         </div>
-                        <div class="col-md-4">
-                            <label for="ta" class="form-label">TA</label>
+                        <div class="col-md-2">
+                            <label for="ta" class="form-label">Lulus pada Tahun</label>
                             <input type="text" class="form-control" id="ta" name="ta" value="{{ old('ta', isset($ta) ? $ta : session('ta')) }}" required>
                         </div>
-                        
+                        <div class="col-md-3">
+                            <label for="tipekelas" class="form-label">Tipe Kelas</label>
+                            <select class="form-select" id="tipekelas" name="tipekelas" aria-label="Default select example">
+                                <option value="">-- Pilih Status --</option>
+                                 <option value="BARU" value="{{ old('tipekelas', isset($tipekelas) ? $tipekelas : session('tipekelas')) }}">Reguler</option>
+                                 <option value="PINDAHAN REGULER" value="{{ old('tipekelas', isset($tipekelas) ? $tipekelas : session('tipekelas')) }}">PINDAHAN</option>
+                            </select>
+                        </div>
                         <div class="col-md-12">
                             <button type="submit" class="btn btn-primary btn-lg float-end">Submit</button>
                         </div>
@@ -42,7 +49,7 @@
     </div>
     @if(isset($results))
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12 grid-margin stretch-card">
             <div class="card">
                 <div class="card-body">
                     <h6 class="card-title">Data Table</h6>
@@ -66,6 +73,16 @@
                             </tbody>
                         </table>
                     </div>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    
                     <div class="col-md-12">
                         <button class="btn btn-primary btn-lg float-end" onclick="downloadPDF()">Download PDF</button>
                         

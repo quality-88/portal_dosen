@@ -160,7 +160,7 @@
                 var resultList = $('#resultList');
                 resultList.empty();
 
-                console.log('Server Response:', data);
+               
 
                 resultList.show();
 
@@ -184,8 +184,7 @@ $(document).on('click', '#resultList li', function () {
     var npm = splitResult.length > 1 ? splitResult[0] : '';
     var nama = splitResult.length > 1 ? splitResult[1] : '';
 
-    console.log('id dosen:', npm);
-    console.log('Nama:', nama);
+    
 
     $('#npm').val(npm);
     $('#nama').val(nama);
@@ -206,7 +205,6 @@ $(document).on('click', '#resultList li', function () {
         method: 'GET',
         data: { npm: npm },
         success: function (data) {
-            console.log('Server Response:', data);
 
             // Memasukkan data mahasiswa ke dalam input form
             var mahasiswa = data; // mengambil objek pertama dari array (asumsi hanya ada satu objek)
