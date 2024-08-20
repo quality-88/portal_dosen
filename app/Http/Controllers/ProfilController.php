@@ -11,13 +11,13 @@ class ProfilController extends Controller
 {
     return view('profil.profil');   
 }
-public function findDosen(Request $request)
+public function findDosen1(Request $request)
 {
     $term = $request->input('term');
 
     // Perform the search in both tables
     $dosen = DB::table('dosen')
-    ->select('iddosen', 'nama')
+    ->select('iddosen as iddosen', 'nama')
     ->where('nama', 'like', '%' . $term . '%')
     ->get();
     // Combine the results from both tables

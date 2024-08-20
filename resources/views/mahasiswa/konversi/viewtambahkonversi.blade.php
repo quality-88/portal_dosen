@@ -29,24 +29,22 @@
                         </div>
                         <div class="form-group">
                             <label for="idmk">IDMK</label>
-                            <input type="text" class="form-control" id="idmk" name="idmk" placeholder="Mata Kuliah" required>
+                            <input type="text" class="form-control" id="idmk" name="idmk" placeholder="IDMK" required>
                             <ul id="resultList" style="display: none;"></ul>
                         </div>
                         <div class="form-group">
                             <label for="matakuliah">Mata Kuliah</label>
-                            <input type="text" class="form-control" id="matakuliah" name="matakuliah" placeholder="matakuliah" readonly>
-                            <ul id="resultList" style="display: none; overflow-y: auto;"></ul>
+                            <input type="text" class="form-control" id="matakuliah1" name="matakuliah1" placeholder="Mata Kuliah" readonly>
                         </div>
                         <div class="form-group">
                             <label for="sks">SKS</label>
                             <input type="text" class="form-control" id="sks" name="sks" readonly>
-                            <ul id="resultList" style="display: none; overflow-y: auto;"></ul>
                         </div>
                         <div class="form-group">
                             <label for="semester">Semester</label>
                             <input type="text" class="form-control" id="semester" name="semester" readonly>
-                            <ul id="resultList" style="display: none; overflow-y: auto;"></ul>
                         </div>
+                        
                         <div class="form-group">
                             <label for="nilai">Nilai</label>
                             <select class="form-select" id="nilai" name="nilai" required>
@@ -271,7 +269,7 @@ $('.delete-btn').on('click', function () {
             var idMkAsal = $(this).data('idmkasal');
             var idMk = $(this).data('idmk');
             // Optionally, you can redirect the user to an edit page with the necessary parameters
-            window.location.href = 'viewtambahkonversinilai/edit?idPrimary=' + idPrimary + '&npm=' + npm + '&idMkAsal=' + idMkAsal + '&idMk=' + idMk;
+            window.location.href = '{{ route('editKonversi') }}?idPrimary=' + idPrimary + '&npm=' + npm + '&idMkAsal=' + idMkAsal + '&idMk=' + idMk;
         });
     });
 
@@ -281,70 +279,14 @@ $('.delete-btn').on('click', function () {
             $(this).find('td:first').text(index + 1);
         });
     }
-    $('#idmk').on('input', function () {
-    var searchQuery = $(this).val();
 
-    if (searchQuery.length >= 2) {
-        $.ajax({
-            url: 'viewtambahkonversinilai/searchMatakuliah',
-            method: 'GET',
-            data: { term: searchQuery},
-            success: function (data) {
-                var resultList = $('#resultList');
-                resultList.empty();
-
-                console.log('Server Response:', data);
-
-                resultList.show();
-
-                data.forEach(function (result) {
-                    resultList.append('<li data-id="' + result.IDMK + '" data-sks="' + result.SKS + 
-                    '" data-semester="' + result.semester+'">' + result.IDMK + 
-                        ' - ' + result.MATAKULIAH + '</li>');
-
-                });
-            },
-            error: function (error) {
-                console.error('Error fetching data:', error);
-            }
-        });
-        } else {
-            $('#resultList').hide();
-        }
-    });
-        $(document).on('click', '#resultList li', function () {
-            var fullName = $(this).text();
-            var splitResult = fullName.split(' - ');
-        
-            var idmk = splitResult.length > 1 ? splitResult[0] : '';
-            var matakuliah = splitResult.length > 1 ? splitResult[1] : '';
-        
-            console.log('idmk:', idmk);
-            console.log('Matakuliah:', matakuliah);
-        
-            $('#idmk').val(idmk);
-            $('#matakuliah').val(matakuliah);
-
-            // Ambil nilai SKS dari objek result
-            var sks = $(this).data('sks');
-            var semester = $(this).data('semester');
-            $('#sks').val(sks);
-            $('#semester').val(semester);
-            if (!idmk) {
-                $('#matakuliah').val('');
-                $('#sks').val('');
-                $('#semester').val('');
-            }
-        
-            $('#resultList').hide();
-        });
         $('#simpanData').on('click', function () {
     // Mengambil nilai dari form
     var idmkasal = $('#idmkasal').val();
     var matkulasal = $('#matkulasal').val();
     var sksasal = $('#sksasal').val();
     var idmk = $('#idmk').val();
-    var matakuliah = $('#matakuliah').val();
+    var matakuliah = $('#matakuliah1').val();
     var sks = $('#sks').val();
     var semester = $('#semester').val();
     var nilai = $('#nilai').val();
@@ -385,60 +327,89 @@ $('.delete-btn').on('click', function () {
         hasil: hasil,
         status: status
     };
-
-    // Kirim data menggunakan AJAX
-    $.ajax({
-        url: 'viewtambahkonversinilai/simpanData',
+$.ajax({
+        url: '{{ route("simpanKonversi") }}',
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         data: formData,
         success: function (response) {
-            // Handle success response
-            console.log(response);
-            // Tutup modal setelah berhasil disimpan
-            $('#tambahModal').modal('hide');
-            // Tampilkan notifikasi
             Swal.fire({
                 title: 'Sukses!',
                 text: 'Data berhasil disimpan',
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then((result) => {
-                // Reload tampilan data
-                window.location.href = "{{ route('changeView') }}?npm=" + npm;
+                window.location.href = "{{ route('changeView') }}?npm=" + '{{ session('npm') }}';
             });
-
         },
         error: function (xhr, status, error) {
-            // Handle error response
-            console.error(xhr.responseText);
-            // Parse JSON response
             var response = JSON.parse(xhr.responseText);
-            // Tampilkan pesan kesalahan kepada pengguna
-            if (response.message) {
-                // Jika terdapat pesan kesalahan dari server, tampilkan pesan tersebut menggunakan SweetAlert
-                Swal.fire({
-                    title: 'Error!',
-                    text: response.message,
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            } else {
-                // Jika tidak ada pesan kesalahan yang diberikan oleh server, tampilkan pesan kesalahan umum
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Terjadi kesalahan saat menyimpan data.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-            }
+            var errorMessage = response.message || 'Terjadi kesalahan saat menyimpan data.';
+
+            Swal.fire({
+                title: 'Error!',
+                text: errorMessage,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     });
 });
+$(document).ready(function () {
+    $('#idmk').on('input', function () {
+        var searchQuery = $(this).val();
 
+        if (searchQuery.length >= 2) {
+            $.ajax({
+                url: '{{ route("searchMatkul") }}', // Pastikan URL ini benar
+                method: 'GET',
+                data: { term: searchQuery },
+                success: function (data) {
+                    var resultList = $('#resultList');
+                    resultList.empty();
 
+                    console.log('Server Response:', data);
+
+                    resultList.show();
+
+                    data.forEach(function (result) {
+                        resultList.append('<li data-id="' + result.idmk + 
+                        '" data-matakuliah1="' + result.matakuliah + 
+                        '" data-sks="' + result.SKS + 
+                        '" data-semester="' + result.semester + '">' + 
+                        result.idmk + ' - ' + result.matakuliah + '</li>');
+                    });
+                },
+                error: function (error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        } else {
+            $('#resultList').hide();
+        }
+    });
+
+    $(document).on('click', '#resultList li', function () {
+        var idmk = $(this).data('id');
+        var matakuliah = $(this).data('matakuliah1');
+        var sks = $(this).data('sks');
+        var semester = $(this).data('semester');
+
+        console.log('idmk:', idmk);
+        console.log('Matakuliah:', matakuliah);
+        console.log('SKS:', sks);
+        console.log('Semester:', semester);
+
+        $('#idmk').val(idmk);
+        $('#matakuliah1').val(matakuliah);
+        $('#sks').val(sks);
+        $('#semester').val(semester);
+
+        $('#resultList').hide();
+    });
+});
 </script>
 
 @endsection

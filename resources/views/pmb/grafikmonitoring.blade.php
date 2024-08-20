@@ -433,7 +433,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 doc.setTextColor(100, 100, 100);
                 doc.text(pageNumberText, pageWidth / 2, pageHeight - 20, { align: 'center' });
             }
-            // Save the PDF
+            const bottomYPosition = doc.internal.pageSize.height - 20;
+
+            doc.text('Downloaded from Q-Enterprise', 50, bottomYPosition + 15);
             doc.save(`Grafik_Monitoring_PMB-${lokasiText}_${ta_awal} - ${ta_akhir}_${formattedDate}.pdf`);
         });
     });

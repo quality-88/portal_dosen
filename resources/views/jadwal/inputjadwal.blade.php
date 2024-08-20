@@ -55,7 +55,7 @@
                             <label class="col-sm-3 col-form-label">Mata Kuliah</label>
                             <div class="col-sm-9">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="matakuliah" name="matakuliah" placeholder="matakuliah" readonly>
+                                    <input type="text" class="form-control" id="matakuliah1" name="matakuliah1" placeholder="matakuliah" readonly>
                                     <ul id="resultList" style="display: none; overflow-y: auto;"></ul>
                                 </div>
                             </div>
@@ -554,6 +554,8 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-12">
+                                <h4 class="mb-0">Input dan Validasi Jadwal </h4>
+                                <hr class="my-4">
                                 <form class="row g-3" action="#" method="POST">
                                     @csrf
                                     <div class="col-md-4">
@@ -597,6 +599,7 @@
                                         <select class="form-select" id="semester" name="semester" required>
                                             <option value="1">1</option>
                                             <option value="2">2</option>
+                                            <option value="3">3</option>
                                         </select>
                                     </div>
                                 </form>
@@ -688,7 +691,7 @@
 <!-- Your custom JavaScript to load and display PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.20/dist/sweetalert2.all.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.4/xlsx.full.min.js"></script>
 <!-- Select2 CSS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
@@ -702,7 +705,7 @@
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.20/dist/sweetalert2.all.min.js"></script>
 <!-- Script untuk QRCode -->
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.min.js"></script>
@@ -1044,9 +1047,6 @@ $(document).ready(function() {
         var semester = $('#semester').val(); // Get the semester value
         var prodi = $('#prodi').val(); // Get the program study value
 
-        console.log('semester:', semester);
-        console.log('ta:', ta);
-        console.log('prodi:', prodi);
         
         $.ajax({
             url: '{{ route("getIDMK") }}',
@@ -1062,7 +1062,7 @@ $(document).ready(function() {
                 tbody.empty();
 
                 $.each(response, function(index, item) {
-                    var row = '<tr data-idmk="' + item.idmk + '" data-matakuliah="' + item.matakuliah + '" data-sks="' + item.sks + '" data-iddosen="' + item.iddosen + '">' +
+                    var row = '<tr data-idmk="' + item.idmk + '" data-matakuliah1="' + item.matakuliah + '" data-sks="' + item.sks + '" data-iddosen="' + item.iddosen + '">' +
                         '<td>' + item.idmk + '</td>' +
                         '<td>' + item.matakuliah + '</td>' +
                         '<td>' + item.sks + '</td>' +
@@ -1079,12 +1079,12 @@ $(document).ready(function() {
 
     $('#idmkTable').on('click', 'tr', function() {
         var idmk = $(this).data('idmk');
-        var matakuliah = $(this).data('matakuliah');
+        var matakuliah = $(this).data('matakuliah1');
         var sks = $(this).data('sks');
         var iddosen = $(this).data('iddosen');
 
         $('#idmk').val(idmk);
-        $('#matakuliah').val(matakuliah);
+        $('#matakuliah1').val(matakuliah);
         $('#sks').val(sks);
         $('#iddosen').val(iddosen);
 
@@ -1210,8 +1210,6 @@ $(document).ready(function() {
         var idmk = $('#idmk').val();
         var prodi = $('#prodi').val();
 
-        console.log('idmk:', idmk);
-        console.log('prodi:', prodi);
         
         $.ajax({
             url: '{{ route("getDosen2") }}',
@@ -1511,7 +1509,7 @@ $(document).ready(function() {
             kelas: $('#kelas1').val(),
             kurikulum: $('#kurikulum1').val(),
             idmk: $('#idmk').val(),
-            matakuliah: $('#matakuliah').val(),
+            matakuliah: $('#matakuliah1').val(),
             sks: $('#sks').val(),
             iddosen: $('#iddosen').val(),
             keterangan: $('#keterangan').val(),
@@ -1544,10 +1542,8 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.status === 'error') {
                     if (response.message === 'Dosen sudah memiliki kelas pada jam yang sama') {
-                        // Tampilkan SweetAlert jika ada bentrok
                         let message = 'Dosen sudah memiliki kelas pada jam yang sama:\n\n';
                         response.data.forEach(function(item) {
-                            // Gunakan item.hari untuk menampilkan nama hari
                             message += `Hari: ${item.hari}, Kelas: ${item.kelas}, IDMK: ${item.idmk}, Jam: ${item.jammasuk} - ${item.jamkeluar}\n`;
                         });
 
@@ -1557,9 +1553,8 @@ $(document).ready(function() {
                             text: message,
                             confirmButtonText: 'OK'
                         });
-                    } else if (response.message === 'Dosen sudah memiliki jadwal mengajar untuk mata kuliah ini') {
-                        // Tampilkan SweetAlert jika dosen sudah mengajar idmk yang sama
-                        let detailsMessage = 'Dosen sudah memiliki jadwal mengajar untuk mata kuliah ' + response.matakuliah + ' pada semester dan tahun ajaran yang sama:\n\n';
+                    } else if (response.message === 'Dosen sudah memiliki jadwal mengajar untuk mata kuliah ini di kelas yang sama') {
+                        let detailsMessage = `Dosen sudah memiliki jadwal mengajar untuk mata kuliah ${response.matakuliah} di kelas yang sama pada semester dan tahun ajaran yang sama:\n\n`;
                         response.details.forEach(function(item) {
                             detailsMessage += `Hari: ${item.harijadwal}, Kelas: ${item.kelas}, Jam: ${item.jammasuk} - ${item.jamkeluar}\n`;
                         });
@@ -1577,6 +1572,9 @@ $(document).ready(function() {
                         title: 'Data Berhasil Disimpan',
                         text: 'Jadwal berhasil disimpan.',
                         confirmButtonText: 'OK'
+                    }).then(function() {
+                        // Reload halaman setelah notifikasi ditutup
+                        location.reload();
                     });
                 }
             },

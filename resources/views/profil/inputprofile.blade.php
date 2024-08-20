@@ -455,7 +455,7 @@
        if (searchQuery.length >= 4) {
            // Lakukan permintaan AJAX ke server untuk mencari Dosen
            $.ajax({
-               url: '/findDosen',
+                url: '{{ route("findDosen") }}',
                method: 'GET',
                data: { term: searchQuery },
                success: function (data) {
@@ -513,7 +513,7 @@ function toggleContent(sectionId) {
     $('#searchButton').click(function() {
         var idDosen = $('#iddosen').val();
         $.ajax({
-            url: 'input/fetchProfile',
+            url: '{{ route("fetchProfile") }}',
             method: 'GET',
             data: { iddosen: idDosen },
             success: function(data) {
@@ -686,7 +686,7 @@ function toggleContent(sectionId) {
                     $('#matkulBtn').click(function () {
                     var idDosen = $('#iddosen').val();
                     // Arahkan pengguna ke halaman tambahpendidikan.blade.php
-                    window.location.href = '/tambahmatakuliah?idDosen=' + idDosen;
+                    window.location.href = '{{ route('showMatkul') }}?idDosen=' + idDosen;
                         });
                         $('.hapus-btn').click(function () {
                     var idPrimary = $(this).data('id');
@@ -744,7 +744,7 @@ function toggleContent(sectionId) {
                             $('#matkulBtn').click(function () {
                                 var idDosen = $('#iddosen').val();
                                 // Arahkan pengguna ke halaman tambahmatakuliah.blade.php
-                                window.location.href = '/tambahmatakuliah?idDosen=' + idDosen;
+                                window.location.href = '{{ route('showMatkul') }}?idDosen=' + idDosen;
                             });
                         } else {
                             $('#matakuliahContent').html('<p>Data matakuliah tidak ditemukan.</p>');

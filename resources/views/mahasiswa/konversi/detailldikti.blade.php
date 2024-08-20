@@ -287,7 +287,7 @@ doc.setFontSize(10);
     // Teks di sebelah kanan
     var rightAlignX = doc.internal.pageSize.width - 200;
     doc.text('Team Konversi Program Studi', rightAlignX, startY);
-    doc.text('Manajemen UQB', rightAlignX, startY + 20);
+    doc.text(`${data.prodi}`, rightAlignX, startY + 20);
     doc.text('(________________________)', rightAlignX, startY + 80);
     // Mengunduh PDF
     const currentDate = new Date();

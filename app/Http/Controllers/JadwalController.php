@@ -365,7 +365,8 @@ public function simpan(Request $request)
     $kelasgabungan = $request->input('kelasgabungan');
     $gabunganprodi = $request->input('gabunganprodi');
     $prodigabungan = $request->input('prodigabungan');
-    
+    Log::info('Matakuliah diterima: ' . $matakuliah);
+
     // Tentukan nilai untuk Chk
     $honor = str_replace('.', ',', $honor);
     $chk = ($gabungan == 'Y') ? 'R' : '£';
@@ -384,74 +385,76 @@ public function simpan(Request $request)
         '6' => 'Sabtu',
         '7' => 'Minggu'
     ];
-    
-    // Cek bentrok jadwal dosen
-    $existingClasses = DB::table('jadwalprimary')
-        ->where('iddosen', $iddosen)
-        ->where('HariJadwal', $harijadwal)
-        ->where('ta', $ta)
-        ->where('semester', $semester)
-        ->where(function ($query) use ($jammasuk, $jamkeluar) {
-            $query->whereBetween('jammasuk', [$jammasuk, $jamkeluar])
-                  ->orWhereBetween('jamkeluar', [$jammasuk, $jamkeluar])
-                  ->orWhere(function ($query) use ($jammasuk, $jamkeluar) {
-                      $query->where('jammasuk', '<=', $jammasuk)
-                            ->where('jamkeluar', '>=', $jamkeluar);
-                  });
-        })
-        ->get(['idmk', 'kelas', 'jammasuk', 'jamkeluar', 'HariJadwal']);
 
-    if ($existingClasses->count() > 0) {
-        // Menambahkan nama hari ke data yang dikembalikan
-        $existingClasses->transform(function ($item) use ($hariMap) {
-            $item->hari = $hariMap[$item->HariJadwal] ?? 'Unknown';
-            return $item;
-        });
+    // Cek bentrok jadwal dosen hanya jika gabungan bukan 'Y'
+    if ($gabungan != 'Y') {
+        $existingClasses = DB::table('jadwalprimary')
+            ->where('iddosen2', $iddosen)
+            ->where('HariJadwal', $harijadwal)
+            ->where('ta', $ta)
+            ->where('semester', $semester)
+            ->where(function ($query) use ($jammasuk, $jamkeluar) {
+                $query->whereBetween('jammasuk', [$jammasuk, $jamkeluar])
+                    ->orWhereBetween('jamkeluar', [$jammasuk, $jamkeluar])
+                    ->orWhere(function ($query) use ($jammasuk, $jamkeluar) {
+                        $query->where('jammasuk', '<=', $jammasuk)
+                              ->where('jamkeluar', '>=', $jamkeluar);
+                    });
+            })
+            ->get(['idmk', 'kelas', 'jammasuk', 'jamkeluar', 'HariJadwal']);
 
-        // Jika ada bentrok, kembalikan data bentrok
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Dosen sudah memiliki kelas pada jam yang sama',
-            'data' => $existingClasses
-        ]);
+        if ($existingClasses->count() > 0) {
+            $existingClasses->transform(function ($item) use ($hariMap) {
+                $item->hari = $hariMap[$item->HariJadwal] ?? 'Unknown';
+                return $item;
+            });
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Dosen sudah memiliki kelas pada jam yang sama',
+                'data' => $existingClasses
+            ]);
+        }
     }
 
     // Cek apakah kelas sudah memiliki jadwal pada jam yang sama
-    $existingClassSchedule = DB::table('jadwalprimary')
-        ->where('kelas', $kelas)
-        ->where('HariJadwal', $harijadwal)
-        ->where('ta', $ta)
-        ->where('semester', $semester)
-        ->where('jammasuk', $jammasuk)
-        ->where('jamkeluar', $jamkeluar)
-        ->first();
+    if ($gabungan != 'Y') {
+        $existingClassSchedule = DB::table('jadwalprimary')
+            ->where('kelas', $kelas)
+            ->where('HariJadwal', $harijadwal)
+            ->where('ta', $ta)
+            ->where('semester', $semester)
+            ->where('jammasuk', $jammasuk)
+            ->where('jamkeluar', $jamkeluar)
+            ->first();
 
-    if ($existingClassSchedule) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Kelas sudah memiliki jadwal belajar dari ' . $jammasuk . ' sampai ' . $jamkeluar,
-            'details' => $existingClassSchedule
-        ]);
+        if ($existingClassSchedule) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kelas sudah memiliki jadwal belajar dari ' . $jammasuk . ' sampai ' . $jamkeluar,
+                'details' => $existingClassSchedule
+            ]);
+        }
     }
 
-    // Cek apakah dosen sudah memiliki jadwal mengajar idmk tersebut
+    // Cek apakah dosen sudah memiliki jadwal mengajar idmk tersebut di kelas yang sama
     $existingIdmkSchedule = DB::table('jadwalprimary')
-        ->where('iddosen', $iddosen)
+        ->where('iddosen2', $iddosen)
         ->where('idmk', $idmk)
+        ->where('kelas', $kelas) // Tambahkan pengecekan kelas
         ->where('ta', $ta)
         ->where('semester', $semester)
         ->first();
 
     if ($existingIdmkSchedule) {
-        // Ambil detail jadwal dosen untuk mata kuliah ini
         $existingDetails = DB::table('jadwalprimary')
-            ->where('iddosen', $iddosen)
+            ->where('iddosen2', $iddosen)
             ->where('idmk', $idmk)
+            ->where('kelas', $kelas)
             ->where('ta', $ta)
             ->where('semester', $semester)
             ->get(['harijadwal', 'kelas', 'jammasuk', 'jamkeluar']);
 
-        // Konversi hari dari angka ke nama hari
         $existingDetails = $existingDetails->map(function ($item) use ($hariMap) {
             $item->harijadwal = $hariMap[$item->harijadwal] ?? 'Tidak Diketahui';
             return $item;
@@ -459,12 +462,12 @@ public function simpan(Request $request)
 
         return response()->json([
             'status' => 'error',
-            'message' => 'Dosen sudah memiliki jadwal mengajar untuk mata kuliah ini',
+            'message' => 'Dosen sudah memiliki jadwal mengajar untuk mata kuliah ini di kelas yang sama',
             'matakuliah' => $matakuliah,
             'details' => $existingDetails
         ]);
     }
-    
+
     // Simpan data ke tabel jadwalprimary
     DB::table('jadwalprimary')->insert([
         'idkampus' => $idkampus,
@@ -504,6 +507,8 @@ public function simpan(Request $request)
 
     return response()->json(['status' => 'success']);
 }
+
+
 public function validateJadwal(Request $request)
 {
     $idprimary = $request->input('idprimary');
@@ -721,6 +726,7 @@ public function showReportJadwal (Request $request)
             ->where('jadwalprimary.semester', $semester)
             ->where('jadwalprimary.idkampus', $idkampus)
             ->where('jadwalprimary.prodi', $prodi)
+            ->where('jadwalprimary.Validasi', 'T')
             ->orderBy($orderby)
             ->get();
     

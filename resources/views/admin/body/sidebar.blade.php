@@ -382,7 +382,7 @@
                 </div>
             </li>
             @endif
-            @if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik', 'Kaprodi','Marketing']))
+            @if(in_array($userDivision, ['Administrator', 'Biro Akademik', 'Ka Biro Akademik', 'Kaprodi','Marketing','Sekretariat']))
             <li class="nav-item nav-category">PMB</li>
             <li class="nav-item">
                 <a class="nav-link" data-bs-toggle="collapse" href="#pmb" role="button" aria-expanded="false" aria-controls="pmb">
@@ -405,7 +405,7 @@
                             <a class="nav-link" href="{{ route('showDataCalonMahasiswa') }}">Calon Mahasiswa S1</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showDataCalonMahasiswas2') }}">Calon Mahasiswa S1</a>
+                            <a class="nav-link" href="{{ route('showDataCalonMahasiswas2') }}">Calon Mahasiswa S2</a>
                         </li>
                     </ul>
                 </div>

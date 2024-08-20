@@ -243,8 +243,12 @@ doc.autoTable({
     
 });
 @endif
+
     // Mengunduh PDF
     doc.setFontSize(10);
+    const bottomYPosition = doc.internal.pageSize.height - 20;
+    doc.text(printDateTime, 50, bottomYPosition);
+    doc.text('Downloaded from Q-Enterprise', 50, bottomYPosition + 15);
     const fileName = `Monitoring_PMB_${lokasiText}_${ta}_${formattedDate}.pdf`;
     doc.save(fileName);
 }

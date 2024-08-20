@@ -55,7 +55,7 @@
                             <label class="col-sm-3 col-form-label">Mata Kuliah</label>
                             <div class="col-sm-9">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="matakuliah" name="matakuliah" placeholder="matakuliah" readonly>
+                                    <input type="text" class="form-control" id="matakuliah1" name="matakuliah1" placeholder="matakuliah" readonly>
                                     <ul id="resultList" style="display: none; overflow-y: auto;"></ul>
                                 </div>
                             </div>
@@ -975,7 +975,7 @@ $(document).ready(function() {
         var iddosen = $(this).data('iddosen');
 
         $('#idmk').val(idmk);
-        $('#matakuliah').val(matakuliah);
+        $('#matakuliah1').val(matakuliah);
         $('#sks').val(sks);
         $('#iddosen').val(iddosen);
 
@@ -1402,7 +1402,7 @@ $(document).ready(function() {
             kelas: $('#kelas1').val(),
             kurikulum: $('#kurikulum1').val(),
             idmk: $('#idmk').val(),
-            matakuliah: $('#matakuliah').val(),
+            matakuliah: $('#matakuliah1').val(),
             sks: $('#sks').val(),
             iddosen: $('#iddosen').val(),
             keterangan: $('#keterangan').val(),
@@ -1435,10 +1435,8 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.status === 'error') {
                     if (response.message === 'Dosen sudah memiliki kelas pada jam yang sama') {
-                        // Tampilkan SweetAlert jika ada bentrok
                         let message = 'Dosen sudah memiliki kelas pada jam yang sama:\n\n';
                         response.data.forEach(function(item) {
-                            // Gunakan item.hari untuk menampilkan nama hari
                             message += `Hari: ${item.hari}, Kelas: ${item.kelas}, IDMK: ${item.idmk}, Jam: ${item.jammasuk} - ${item.jamkeluar}\n`;
                         });
 
@@ -1448,9 +1446,8 @@ $(document).ready(function() {
                             text: message,
                             confirmButtonText: 'OK'
                         });
-                    } else if (response.message === 'Dosen sudah memiliki jadwal mengajar untuk mata kuliah ini') {
-                        // Tampilkan SweetAlert jika dosen sudah mengajar idmk yang sama
-                        let detailsMessage = 'Dosen sudah memiliki jadwal mengajar untuk mata kuliah ' + response.matakuliah + ' pada semester dan tahun ajaran yang sama:\n\n';
+                    } else if (response.message === 'Dosen sudah memiliki jadwal mengajar untuk mata kuliah ini di kelas yang sama') {
+                        let detailsMessage = `Dosen sudah memiliki jadwal mengajar untuk mata kuliah ${response.matakuliah} di kelas yang sama pada semester dan tahun ajaran yang sama:\n\n`;
                         response.details.forEach(function(item) {
                             detailsMessage += `Hari: ${item.harijadwal}, Kelas: ${item.kelas}, Jam: ${item.jammasuk} - ${item.jamkeluar}\n`;
                         });
@@ -1468,6 +1465,9 @@ $(document).ready(function() {
                         title: 'Data Berhasil Disimpan',
                         text: 'Jadwal berhasil disimpan.',
                         confirmButtonText: 'OK'
+                    }).then(function() {
+                        // Reload halaman setelah notifikasi ditutup
+                        location.reload();
                     });
                 }
             },
@@ -1482,6 +1482,7 @@ $(document).ready(function() {
         });
     });
 });
+
 
 </script>
 

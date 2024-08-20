@@ -74,11 +74,11 @@ Route::group(['middleware' => ['auth', 'CheckLoginTime']], function () {
     //profil dosen
     Route::get('/show-profile', [ProfilController::class, 'profilDashboard'])->name('profilDashboard');
     Route::get('/profil/fetchData', [ProfilController::class, 'fetchData']);
-    Route::get('input/findDosen', [ProfilController::class, 'findDosen'])->name('findDosen');
+    Route::get('/findDosen', [ProfilController::class, 'findDosen1'])->name('findDosen1');
     Route::post('/profil/approve', [ProfilController::class,'approveData']);
     Route::post('/profil/reject', [ProfilController::class,'rejectData']);
     Route::get('/input', [ProfilController::class, 'profilInput'])->name('profilInput');
-    Route::get('input/fetchProfile', [ProfilController::class, 'fetchProfile']);
+    Route::get('/fetchProfile', [ProfilController::class, 'fetchProfile'])->name('fetchProfile');
     //pendidikan dosen
     Route::post('input/hapusDataPendidikan', [ProfilController::class,'deletePendidikan']);
     Route::get('input/ubahpendidikan', [ProfilController::class,'ubahPendidikan']);

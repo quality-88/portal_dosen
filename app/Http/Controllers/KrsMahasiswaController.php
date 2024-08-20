@@ -626,13 +626,13 @@ public function searchMatkul (Request $request)
     $searchTerm = $request->input('term');
     // Modifikasi query untuk mengambil data matakuliah sesuai prodi dan kurikulum yang dipilih
     $results = DB::table('matakuliah')
-        ->select('IDMK', 'MATAKULIAH', 'SKS', 'semester')
-        ->whereIn('IDMK', function($query) use ($prodi) {
+        ->select('idmk', 'matakuliah', 'SKS', 'semester')
+        ->whereIn('idmk', function($query) use ($prodi) {
             $query->select('idmk')
                   ->from('prodimk')
                   ->where('prodi', $prodi);
         })
-        ->where('MATAKULIAH', 'like', '%' . $searchTerm . '%')
+        ->where('matakuliah', 'like', '%' . $searchTerm . '%')
         ->get();
     // Tambahkan pernyataan log sebelum mengembalikan respons
     \Log::info('searchidmk request with term: ' . $searchTerm);
@@ -707,14 +707,36 @@ public function simpanKonversi(Request $request)
         })
         ->exists();
 
-$existingKrsmPrimary = DB::table('krsmPrimary')
+    $existingKrsmPrimary = DB::table('krsmPrimary')
         ->where('NPM', $npm)
         ->where(function ($query) use ($idmkasal, $idmk) {
             $query->where('IDMKASAL', $idmkasal)
                   ->orWhere('IdMK', $idmk);
         })
         ->exists();
+// Cek apakah idmkasal sudah ada di database
+$existsIdMkAsal = DB::table('krsmprimary')
+->where('npm', $npm)
+->where('IDMK', $idmkasal)
+->exists();
 
+// Cek apakah idmk sudah ada di database
+$existsIdMk = DB::table('krsm')
+->where('npm', $npm)
+->where('IDMK', $idmk)
+->exists();
+
+if ($existsIdMkAsal) {
+return response()->json([
+'message' => 'IDMK Asal sudah pernah dimasukkan.',
+], 422);
+}
+
+if ($existsIdMk) {
+return response()->json([
+'message' => 'IDMK sudah pernah dimasukkan.',
+], 422);
+}
 // Jika idmkasal atau idmk sudah digunakan sebelumnya, kirimkan respons error
 if ($existingKrsm || $existingKrsmPrimary) {
 return response()->json(['message' => 'IDMK Asal atau IDMK sudah pernah digunakan sebelumnya.'], 400);
@@ -1002,8 +1024,6 @@ public function searchLDIKTI(Request $request)
 
     return response()->json($results);
 }
-
-
 public function detailLDIKTI(Request $request)
 {
     $npmasal = $request->input('npmasal');
@@ -1069,6 +1089,8 @@ public function detailLDIKTI(Request $request)
         ->where('NPM', $npm)
         ->where('HasilPengakuan', 'Di Akui Dengan Syarat Tertentu')
         ->sum('SKS');
+
+
         $total = $totalsks1 + $totalsks2;
         // Menghitung jumlah SKS dari result1
         $totalSKSResult1 = 0;
@@ -1083,8 +1105,14 @@ public function detailLDIKTI(Request $request)
         }
 
         // Menggabungkan total SKS dari result1 dan result2
-        $totalSKS = $totalSKSResult1 + $totalSKSResult2;
-//dd($lokasi);
+
+        $totalSKS = DB::table('prodimk')
+        ->where('prodi', $prodi)
+        ->where('kurikulum', $kurikulum)
+        ->where('idkampus', $idKampus)
+        ->sum('sks');
+
+    //dd($idKampus);
     $data = [
         'result1' => $result1,
         'result2' => $result2,

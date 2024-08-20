@@ -30,7 +30,7 @@
                         {{ session('success') }}
                     </div>
                 @endif
-                        <table id="dataTableExample" class="table">
+                        <table id="dataTableExample" class="table table-striped">
                             <thead>
                                 <tr>
                                     <th>No</th>
@@ -151,9 +151,7 @@
 
     //PDF
     window.jsPDF = window.jspdf.jsPDF;
-    window.jsPDF = window.jspdf.jsPDF;
-document.getElementById('downloadPdf').addEventListener('click', function () {
-    // Create a new jsPDF instance
+    document.getElementById('downloadPdf').addEventListener('click', function () {
     var urlParams = new URLSearchParams(window.location.search);
     var kelas = urlParams.get('kelas') || '';
     var prodi = "{{ session('prodi') }}";
@@ -162,54 +160,43 @@ document.getElementById('downloadPdf').addEventListener('click', function () {
     var iddosen = "{{ session('iddosen') }}";
     var MataKuliah = "{{ session('matakuliah') }}";
     var semester = "{{ session('semester') }}";
-    var idKampus = "{{ session('idKampus') }}"; // Assuming this is the session variable for campus ID
-    var Lokasi ="{{ session('Lokasi') }}";
-    // Create a new jsPDF instance
+    var idKampus = "{{ session('idKampus') }}";
+    var Lokasi = "{{ session('Lokasi') }}";
+
     var pdf = new jsPDF({
         format: 'a4',
         orientation: 'landscape',
     });
-    
-    // Set the title
+
     pdf.setFontSize(16);
     pdf.text("Daftar Nilai Mahasiswa / Kelas", 10, 20);
     pdf.setFontSize(14);
     pdf.text("Universitas Quality", 10, 30);
-    pdf.text("Dosen: " + nama +"(" + iddosen +")", 10, 40);
-    // Set the information section
+    pdf.text("Dosen: " + nama + " (" + iddosen + ")", 10, 40);
     pdf.setFontSize(10);
     pdf.text("ID Kampus / Lokasi : " + idKampus + "/" + Lokasi, 140, 20);
     pdf.text("TA/Semester: " + ta + "/" + semester, 250, 20);
     pdf.text("Program Studi: " + prodi, 250, 30);
     pdf.text("Mata Kuliah: " + MataKuliah, 140, 30);
     pdf.setFontSize(14);
-    // Get the table element
-    var table = document.getElementById('dataTableExample');
-    
-    // Check if kelas is not undefined or empty
-    if (kelas) {
-        // Set the header row as a title for the PDF with kelas
-        pdf.text(10, 60, 'Table Data for Nilai Kelas ' + kelas);
-    } else {
-        // Set the header row as a title for the PDF without kelas
-        pdf.text(10, 70, 'Table Data for Nilai Kelas');
-    }
 
-    // Convert the table to a PDF
+    var table = document.getElementById('dataTableExample');
+    var titleY = kelas ? 60 : 70;
+    pdf.text(10, titleY, 'Table Data for Nilai Kelas ' + (kelas || ''));
+
     pdf.autoTable({
         html: table,
-        startY: 70 // Adjust startY value to leave space for added information
+        startY: titleY + 10
     });
 
-    // Create a dynamic filename based on user input
     var idMK = "{{ session('idMK') }}";
     var tglUAS = "{{ session('tglUAS') }}";
-    var namadosen = "{{ session('namadosen') }}";
-    var filenamePdf = prodi + '_TA:' + ta + '_Semester:' + semester + '_Dosen:' + nama + '_IDMK:' +
-        idMK + '_Kelas:' + kelas + '_TGLUAS:' + tglUAS + '.pdf';
-    // Save the PDF with the dynamic filename
+    var filenamePdf = `${prodi}_TA:${ta}_Semester:${semester}_Dosen:${nama}_IDMK:${idMK}_Kelas:${kelas}_TGLUAS:${tglUAS}.pdf`;
+
+    pdf.text('Downloaded from Q-Enterprise', 10, pdf.internal.pageSize.height - 10);
     pdf.save(filenamePdf);
 });
+
 
 </script>
 
