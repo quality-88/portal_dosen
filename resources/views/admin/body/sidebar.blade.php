@@ -114,6 +114,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('formRekapAbsensiDosen') }}">Absensi Dosen</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showKartuMengajar') }}">Kartu Mengajar Dosen</a>
+                        </li>
                     </ul>
                 </div>
             </li>

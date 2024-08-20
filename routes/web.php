@@ -21,6 +21,7 @@ use App\Http\Controllers\PMBController;
 use App\Http\Controllers\JadwalController;  
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\MatakuliahController; 
+use App\Http\Controllers\DosenController;
 use Illuminate\Support\Facades\DB;
 /*
 |--------------------------------------------------------------------------
@@ -320,6 +321,11 @@ Route::post('/updateprofilemahasiswa', [MahasiswaController::class,'updateProfil
  Route::post('/updatepengampu', [MatakuliahController::class, 'updatePengampu'])->name('updatePengampu');
  Route::get('/addmatkul', [MatakuliahController::class, 'addMataKuliah'])->name('addMataKuliah'); 
  Route::post('/store-matakuliah', [MatakuliahController::class, 'tambahMatakuliah'])->name('tambahMatakuliah');
+
+ //Kartu Mengajar
+ Route::get('/showkartu', [DosenController::class, 'showKartuMengajar'])->name('showKartuMengajar'); 
+ Route::post('/getHonorsks', [DosenController::class, 'getHonorSKS'])->name('getHonorSKS');
+ Route::post('/showkartu', [DosenController::class, 'viewKartuMengajar'])->name('viewKartuMengajar');  
 });
 
 
