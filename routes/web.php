@@ -21,7 +21,8 @@ use App\Http\Controllers\PMBController;
 use App\Http\Controllers\JadwalController;  
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\MatakuliahController; 
-use App\Http\Controllers\DosenController;
+use App\Http\Controllers\DosenController; 
+use App\Http\Controllers\AlumniController;
 use Illuminate\Support\Facades\DB;
 /*
 |--------------------------------------------------------------------------
@@ -188,20 +189,20 @@ Route::group(['middleware' => ['auth', 'CheckLoginTime']], function () {
     Route::get('rinciankrs/fetchFakultas', [PropertyTypeController::class, 'fetchFakultas'])->name('fetchFakultas');
 
     //Cetak KRS
-  Route::get('/cetakkrs', [KrsMahasiswaController::class,'showCetakKRS'])->name('showCetakKRS');
-  Route::get('cetakkrs/showMahasiswa', [KrsMahasiswaController::class,'showMahasiswa']);
-  Route::post('/viewcetakkrs', [KrsMahasiswaController::class,'cetakKRS'])->name('cetakKRS');
-  //Mahasiswa
-  Route::get('cetakkrs/findMahasiswa', [MahasiswaController::class,'findMahasiswa'])->name('findMahasiswa');
-  //Data Fungsionaris 
-  Route::get('formkaprodi/findDosen', [FungsionarisController::class, 'findDosen'])->name('findDosen');
-  Route::get('/formkaprodi', [FungsionarisController::class, 'formKaprodi'])->name('formKaprodi');
-  Route::post('/formkaprodi', [FungsionarisController::class, 'insertJabatan'])->name('insertJabatan');
-  Route::get('/viewjabatan', [FungsionarisController::class, 'showViewJabatan'])->name('showViewJabatan');
-  Route::get('formkaprodi/fetchFakultas', [PropertyTypeController::class, 'fetchFakultas'])->name('fetchFakultas');
-  //CMS
-  Route::get('/showjabatanfungsi', [JabatanFungsiController::class,'showJabatanFungsi'])->name('showJabatanFungsi');
-  Route::post('/showjabatanfungsi', [JabatanFungsiController::class,'simpanJabatan'])->name('simpanJabatan');
+    Route::get('/cetakkrs', [KrsMahasiswaController::class,'showCetakKRS'])->name('showCetakKRS');
+    Route::get('cetakkrs/showMahasiswa', [KrsMahasiswaController::class,'showMahasiswa']);
+    Route::post('/viewcetakkrs', [KrsMahasiswaController::class,'cetakKRS'])->name('cetakKRS');
+    //Mahasiswa
+    Route::get('cetakkrs/findMahasiswa', [MahasiswaController::class,'findMahasiswa'])->name('findMahasiswa');
+    //Data Fungsionaris 
+    Route::get('formkaprodi/findDosen', [FungsionarisController::class, 'findDosen'])->name('findDosen');
+    Route::get('/formkaprodi', [FungsionarisController::class, 'formKaprodi'])->name('formKaprodi');
+    Route::post('/formkaprodi', [FungsionarisController::class, 'insertJabatan'])->name('insertJabatan');
+    Route::get('/viewjabatan', [FungsionarisController::class, 'showViewJabatan'])->name('showViewJabatan');
+    Route::get('formkaprodi/fetchFakultas', [PropertyTypeController::class, 'fetchFakultas'])->name('fetchFakultas');
+    //CMS
+    Route::get('/showjabatanfungsi', [JabatanFungsiController::class,'showJabatanFungsi'])->name('showJabatanFungsi');
+    Route::post('/showjabatanfungsi', [JabatanFungsiController::class,'simpanJabatan'])->name('simpanJabatan');
     //Kurikulum
     Route::get('/kurikulum', [KurikulumController::class,'showKurikulum'])->name('showKurikulum');
     Route::post('/kurikulum', [KurikulumController::class,'viewKurikulum'])->name('viewKurikulum');
@@ -213,119 +214,126 @@ Route::group(['middleware' => ['auth', 'CheckLoginTime']], function () {
     Route::post('/delete-kurikulum', [KurikulumController::class, 'deleteKurikulum'])->name('deleteKurikulum');
     Route::post('/updateKurikulum/{id}', [KurikulumController::class, 'updateKurikulum'])->name('updateKurikulum');
 
-  //Konversi Nilai
-  Route::get('/konversinilai', [KrsMahasiswaController::class,'showKonversi'])->name('showKonversi');
-  Route::get('konversinilai/showKonversiNilai', [KrsMahasiswaController::class,'showKonversiNilai']);
-  Route::post('/viewkonversinilai', [KrsMahasiswaController::class,'cetakTranskripNilai'])->name('cetakTranskripNilai');
-  Route::get('konversinilai/findMahasiswa', [MahasiswaController::class,'findMahasiswa'])->name('findMahasiswa');
+    //Konversi Nilai
+    Route::get('/konversinilai', [KrsMahasiswaController::class,'showKonversi'])->name('showKonversi');
+    Route::get('konversinilai/showKonversiNilai', [KrsMahasiswaController::class,'showKonversiNilai']);
+    Route::post('/viewkonversinilai', [KrsMahasiswaController::class,'cetakTranskripNilai'])->name('cetakTranskripNilai');
+    Route::get('konversinilai/findMahasiswa', [MahasiswaController::class,'findMahasiswa'])->name('findMahasiswa');
     //Cetak LDIKTI
     Route::get('/LDIKTI', [KrsMahasiswaController::class, 'showLDIKTI'])->name('showLDIKTI');
     Route::post('/LDIKTI', [KrsMahasiswaController::class, 'cetakLDIKTI'])->name('cetakLDIKTI');
     Route::get('/detailLDIKTI', [KrsMahasiswaController::class, 'detailLDIKTI'])->name('detailLDIKTI');
     Route::post('/searchLDIKTI', [KrsMahasiswaController::class,'searchLDIKTI'])->name('searchLDIKTI');
-  //Input Konversi Nilai
-  Route::get('/tambahkonversi', [KrsMahasiswaController::class,'showTambahKonversi'])->name('showTambahKonversi');
-  Route::get('tambahkonversi/findMahasiswa', [MahasiswaController::class,'findMahasiswa'])->name('findMahasiswa');
-  Route::get('tambahkonversi/showInputKonversiNilai', [KrsMahasiswaController::class,'showInputKonversiNilai']);
-  Route::post('/viewtambahkonversinilai', [KrsMahasiswaController::class,'viewTambahKonversi'])->name('viewTambahKonversi');
-  Route::post('viewtambahkonversinilai/delete', [KrsMahasiswaController::class,'deleteKonversiNilai'])->name('deleteKonversiNilai');
-  Route::get('viewtambahkonversinilai/searchMatakuliah', [KrsMahasiswaController::class,'searchMatkul'])->name('searchMatkul');
-  Route::post('viewtambahkonversinilai/simpanData', [KrsMahasiswaController::class,'simpanKonversi'])->name('simpanKonversi');
-  Route::get('viewtambahkonversinilai/edit', [KrsMahasiswaController::class,'editKonversi'])->name('editKonversi');
-  Route::post('/edit', [KrsMahasiswaController::class,'sendEdit'])->name('sendEdit');
-  Route::get('/changed', [KrsMahasiswaController::class,'changeView'])->name('changeView');
-  //sethonor
-  Route::get('/showsethonor', [SettingHonorController::class,'showSettingHonor'])->name('showSettingHonor');
-  Route::post('/showsethonor', [SettingHonorController::class,'simpanSettingHonor'])->name('simpanSettingHonor');
-  Route::post('/activate-honor-sks', [SettingHonorController::class,'activateHonorSks'])->name('activateHonorSks');
-  //sethonorS1
-  Route::get('/showsethonors1', [SettingHonorController::class,'showSettingHonorS1'])->name('showSettingHonorS1');
-  Route::post('/showsethonors1', [SettingHonorController::class,'simpanSettingHonorS1'])->name('simpanSettingHonorS1');
-  Route::post('/activate-honor-s1', [SettingHonorController::class,'activateHonorS1'])->name('activateHonorS1');
- //Jadwal
- Route::get('/jadwal', [JadwalController::class,'showJadwal'])->name('showJadwal');
- Route::get('/jadwaladmin', [JadwalController::class,'showJadwalAdmin'])->name('showJadwalAdmin'); 
- Route::get('/fetchJadwal', [JadwalController::class,'fetchJadwal'])->name('fetchJadwal');
- Route::get('/fetchFakultas', [JadwalController::class, 'fetchFakultas'])->name('fetchFakultas');
- Route::post('/getKelas', [JadwalController::class, 'getKelas'])->name('getKelas');
- Route::post('/getIDMK', [JadwalController::class, 'getIDMK'])->name('getIDMK');
- Route::post('/getRuangJam', [JadwalController::class, 'getRuang'])->name('getRuang');
- Route::post('/getHonor', [JadwalController::class, 'getHonor'])->name('getHonor'); 
- Route::post('/getDosen2', [JadwalController::class, 'getDosen2'])->name('getDosen2');
- Route::post('/getDosen3', [JadwalController::class, 'getDosen3'])->name('getDosen3');
- Route::post('/getGabungan', [JadwalController::class, 'getGabungan'])->name('getGabungan');
- Route::post('/getProdiGabungan', [JadwalController::class, 'getProdiGabungan'])->name('getProdiGabungan');
- Route::post('/getKurikulum', [JadwalController::class, 'getKurikulum'])->name('getKurikulum'); 
- Route::post('/simpan-data', [JadwalController::class, 'simpan'])->name('simpan.data'); 
- Route::post('/validateJadwal', [JadwalController::class, 'validateJadwal'])->name('validateJadwal');
- Route::post('/validateAllByDay', [JadwalController::class, 'validateAllByDay'])->name('validateAllByDay');
- Route::post('/deleteJadwal', [JadwalController::class, 'deleteJadwal'])->name('deleteJadwal');
- Route::get('/showreport', [JadwalController::class, 'showReportJadwal'])->name('showReportJadwal');
- Route::post('/showreport', [JadwalController::class, 'OrderbyReport'])->name('OrderbyReport'); 
- //UPPS
-  Route::get('/uppsfakultas', [AkreditasiController::class,'showUPPSFakultas'])->name('showUPPSFakultas');
-  Route::post('/viewuppsfakultas', [AkreditasiController::class,'uppsFakultas'])->name('uppsFakultas');
-  Route::get('/upps', [AkreditasiController::class,'showUPPS'])->name('showUPPS');
-  Route::post('/viewupps', [AkreditasiController::class,'viewUPPS'])->name('viewUPPS');
-  //ipk Lulusan
-  Route::get('/ipklulusan', [AkreditasiController::class,'showIPKLulusan'])->name('showIPKLulusan');
-  Route::post('/ipklulusan', [AkreditasiController::class,'IPKLulusan'])->name('IPKLulusan');
-//ipklulusan prodi
-  Route::get('/ipkprodi', [AkreditasiController::class,'showIPKProdi'])->name('showIPKProdi');
-  Route::post('/ipkprodi', [AkreditasiController::class,'HitungIPK'])->name('HitungIPK');
-  Route::get('/ipklulusanprodi', [AkreditasiController::class,'showIPKPPRODI'])->name('showIPKPPRODI');
-  Route::post('/ipklulusanprodi', [AkreditasiController::class,'IPKLulusanPPRODI'])->name('IPKLulusanPPRODI');
-  Route::get('/ipklulusanregulerprodi', [AkreditasiController::class,'showIPKPPRODIRegular'])->name('showIPKPPRODIRegular');
-  Route::post('/ipklulusanregulerprodi', [AkreditasiController::class,'IPKLulusanPPRODIRegular'])->name('IPKLulusanPPRODIRegular');
-  Route::get('/rekapmahasiswakaryawan', [AkreditasiController::class,'showRekapKaryawanProdi'])->name('form.karyawan');
-  Route::post('/rekapmahasiswakaryawan', [AkreditasiController::class,'viewRekapKaryawanProdi'])->name('view.karyawan');
-  Route::get('/detailmahasiswakaryawan', [AkreditasiController::class,'detailKaryawanAktif'])->name('detail.karyawan');
-   //Jumlah Mahasiswa
-  Route::get('/jlhmahasiswa', [AkreditasiController::class,'showjlhMahasiswa'])->name('showjlhMahasiswa');
-  Route::post('/jlhmahasiswa', [AkreditasiController::class,'viewjlhMahasiswa'])->name('viewjlhMahasiswa');
-  Route::get('/jlhmahasiswaprodi', [AkreditasiController::class,'showjlhMahasiswaProdi'])->name('showjlhMahasiswaProdi');
-  Route::post('/jlhmahasiswaprodi', [AkreditasiController::class,'viewjlhMahasiswaProdi'])->name('viewjlhMahasiswaProdi');
-   //Jumlah Mahasiswa Aktif / Tidak Aktif
-  Route::get('/rekapmahasiswa', [AkreditasiController::class,'showRekap'])->name('showRekap');
-  Route::post('/rekapmahasiswa', [AkreditasiController::class,'viewRekap'])->name('viewRekap');
-  Route::get('/rekapmahasiswaprodi', [AkreditasiController::class,'showRekapProdi'])->name('showRekapProdi');
-  Route::post('/rekapmahasiswaprodi', [AkreditasiController::class,'viewRekapProdi'])->name('viewRekapProdi');
-   //PMB
-  Route::get('/monitoringpmb', [PMBController::class,'showMonitoringPMB'])->name('showMonitoringPMB');
-  Route::post('/monitoringpmb', [PMBController::class,'viewMonitoringPMB'])->name('viewMonitoringPMB');
-  Route::get('/grafikpmb', [PMBController::class,'showGrafikPMB'])->name('showGrafikPMB');
-  Route::post('/grafikpmb', [PMBController::class,'viewGrafikPMB'])->name('viewGrafikPMB');
-  Route::get('/datacalon', [PMBController::class,'showDataCalonMahasiswa'])->name('showDataCalonMahasiswa');
-  Route::post('/datacalon', [PMBController::class,'viewDataCalonMahasiswa'])->name('viewDataCalonMahasiswa');
-  Route::get('/datacalons2', [PMBController::class,'showDataCalonMahasiswas2'])->name('showDataCalonMahasiswas2');
-  Route::post('/datacalons2', [PMBController::class,'viewDataCalonMahasiswas2'])->name('viewDataCalonMahasiswas2');
+    //Input Konversi Nilai
+    Route::get('/tambahkonversi', [KrsMahasiswaController::class,'showTambahKonversi'])->name('showTambahKonversi');
+    Route::get('tambahkonversi/findMahasiswa', [MahasiswaController::class,'findMahasiswa'])->name('findMahasiswa');
+    Route::get('tambahkonversi/showInputKonversiNilai', [KrsMahasiswaController::class,'showInputKonversiNilai']);
+    Route::post('/viewtambahkonversinilai', [KrsMahasiswaController::class,'viewTambahKonversi'])->name('viewTambahKonversi');
+    Route::post('viewtambahkonversinilai/delete', [KrsMahasiswaController::class,'deleteKonversiNilai'])->name('deleteKonversiNilai');
+    Route::get('viewtambahkonversinilai/searchMatakuliah', [KrsMahasiswaController::class,'searchMatkul'])->name('searchMatkul');
+    Route::post('viewtambahkonversinilai/simpanData', [KrsMahasiswaController::class,'simpanKonversi'])->name('simpanKonversi');
+    Route::get('viewtambahkonversinilai/edit', [KrsMahasiswaController::class,'editKonversi'])->name('editKonversi');
+    Route::post('/edit', [KrsMahasiswaController::class,'sendEdit'])->name('sendEdit');
+    Route::get('/changed', [KrsMahasiswaController::class,'changeView'])->name('changeView');
+    //sethonor
+    Route::get('/showsethonor', [SettingHonorController::class,'showSettingHonor'])->name('showSettingHonor');
+    Route::post('/showsethonor', [SettingHonorController::class,'simpanSettingHonor'])->name('simpanSettingHonor');
+    Route::post('/activate-honor-sks', [SettingHonorController::class,'activateHonorSks'])->name('activateHonorSks');
+    //sethonorS1
+    Route::get('/showsethonors1', [SettingHonorController::class,'showSettingHonorS1'])->name('showSettingHonorS1');
+    Route::post('/showsethonors1', [SettingHonorController::class,'simpanSettingHonorS1'])->name('simpanSettingHonorS1');
+    Route::post('/activate-honor-s1', [SettingHonorController::class,'activateHonorS1'])->name('activateHonorS1');
+    //tunjangan doktor
+    Route::get('/tunjdoktor', [SettingHonorController::class,'showTunjanganDoktor'])->name('showTunjanganDoktor');
+    Route::post('/tunjdoktor', [SettingHonorController::class,'simpanTunganDoktor'])->name('simpanTunganDoktor');
+    Route::post('/activatedoktor', [SettingHonorController::class,'activateTunganDoktor'])->name('activateTunganDoktor'); 
+    //Jadwal
+    Route::get('/jadwal', [JadwalController::class,'showJadwal'])->name('showJadwal');
+    Route::get('/jadwaladmin', [JadwalController::class,'showJadwalAdmin'])->name('showJadwalAdmin'); 
+    Route::get('/fetchJadwal', [JadwalController::class,'fetchJadwal'])->name('fetchJadwal');
+    Route::get('/fetchFakultas', [JadwalController::class, 'fetchFakultas'])->name('fetchFakultas');
+    Route::post('/getKelas', [JadwalController::class, 'getKelas'])->name('getKelas');
+    Route::post('/getIDMK', [JadwalController::class, 'getIDMK'])->name('getIDMK');
+    Route::post('/getRuangJam', [JadwalController::class, 'getRuang'])->name('getRuang');
+    Route::post('/getHonor', [JadwalController::class, 'getHonor'])->name('getHonor'); 
+    Route::post('/getDosen2', [JadwalController::class, 'getDosen2'])->name('getDosen2');
+    Route::post('/getDosen3', [JadwalController::class, 'getDosen3'])->name('getDosen3');
+    Route::post('/getGabungan', [JadwalController::class, 'getGabungan'])->name('getGabungan');
+    Route::post('/getProdiGabungan', [JadwalController::class, 'getProdiGabungan'])->name('getProdiGabungan');
+    Route::post('/getKurikulum', [JadwalController::class, 'getKurikulum'])->name('getKurikulum'); 
+    Route::post('/simpan-data', [JadwalController::class, 'simpan'])->name('simpan.data'); 
+    Route::post('/validateJadwal', [JadwalController::class, 'validateJadwal'])->name('validateJadwal');
+    Route::post('/validateAllByDay', [JadwalController::class, 'validateAllByDay'])->name('validateAllByDay');
+    Route::post('/deleteJadwal', [JadwalController::class, 'deleteJadwal'])->name('deleteJadwal');
+    Route::get('/showreport', [JadwalController::class, 'showReportJadwal'])->name('showReportJadwal');
+    Route::post('/showreport', [JadwalController::class, 'OrderbyReport'])->name('OrderbyReport'); 
+  //UPPS
+    Route::get('/uppsfakultas', [AkreditasiController::class,'showUPPSFakultas'])->name('showUPPSFakultas');
+    Route::post('/viewuppsfakultas', [AkreditasiController::class,'uppsFakultas'])->name('uppsFakultas');
+    Route::get('/upps', [AkreditasiController::class,'showUPPS'])->name('showUPPS');
+    Route::post('/viewupps', [AkreditasiController::class,'viewUPPS'])->name('viewUPPS');
+    //ipk Lulusan
+    Route::get('/ipklulusan', [AkreditasiController::class,'showIPKLulusan'])->name('showIPKLulusan');
+    Route::post('/ipklulusan', [AkreditasiController::class,'IPKLulusan'])->name('IPKLulusan');
+  //ipklulusan prodi
+    Route::get('/ipkprodi', [AkreditasiController::class,'showIPKProdi'])->name('showIPKProdi');
+    Route::post('/ipkprodi', [AkreditasiController::class,'HitungIPK'])->name('HitungIPK');
+    Route::get('/ipklulusanprodi', [AkreditasiController::class,'showIPKPPRODI'])->name('showIPKPPRODI');
+    Route::post('/ipklulusanprodi', [AkreditasiController::class,'IPKLulusanPPRODI'])->name('IPKLulusanPPRODI');
+    Route::get('/ipklulusanregulerprodi', [AkreditasiController::class,'showIPKPPRODIRegular'])->name('showIPKPPRODIRegular');
+    Route::post('/ipklulusanregulerprodi', [AkreditasiController::class,'IPKLulusanPPRODIRegular'])->name('IPKLulusanPPRODIRegular');
+    Route::get('/rekapmahasiswakaryawan', [AkreditasiController::class,'showRekapKaryawanProdi'])->name('form.karyawan');
+    Route::post('/rekapmahasiswakaryawan', [AkreditasiController::class,'viewRekapKaryawanProdi'])->name('view.karyawan');
+    Route::get('/detailmahasiswakaryawan', [AkreditasiController::class,'detailKaryawanAktif'])->name('detail.karyawan');
+    //Jumlah Mahasiswa
+    Route::get('/jlhmahasiswa', [AkreditasiController::class,'showjlhMahasiswa'])->name('showjlhMahasiswa');
+    Route::post('/jlhmahasiswa', [AkreditasiController::class,'viewjlhMahasiswa'])->name('viewjlhMahasiswa');
+    Route::get('/jlhmahasiswaprodi', [AkreditasiController::class,'showjlhMahasiswaProdi'])->name('showjlhMahasiswaProdi');
+    Route::post('/jlhmahasiswaprodi', [AkreditasiController::class,'viewjlhMahasiswaProdi'])->name('viewjlhMahasiswaProdi');
+    //Jumlah Mahasiswa Aktif / Tidak Aktif
+    Route::get('/rekapmahasiswa', [AkreditasiController::class,'showRekap'])->name('showRekap');
+    Route::post('/rekapmahasiswa', [AkreditasiController::class,'viewRekap'])->name('viewRekap');
+    Route::get('/rekapmahasiswaprodi', [AkreditasiController::class,'showRekapProdi'])->name('showRekapProdi');
+    Route::post('/rekapmahasiswaprodi', [AkreditasiController::class,'viewRekapProdi'])->name('viewRekapProdi');
+    //PMB
+    Route::get('/monitoringpmb', [PMBController::class,'showMonitoringPMB'])->name('showMonitoringPMB');
+    Route::post('/monitoringpmb', [PMBController::class,'viewMonitoringPMB'])->name('viewMonitoringPMB');
+    Route::get('/grafikpmb', [PMBController::class,'showGrafikPMB'])->name('showGrafikPMB');
+    Route::post('/grafikpmb', [PMBController::class,'viewGrafikPMB'])->name('viewGrafikPMB');
+    Route::get('/datacalon', [PMBController::class,'showDataCalonMahasiswa'])->name('showDataCalonMahasiswa');
+    Route::post('/datacalon', [PMBController::class,'viewDataCalonMahasiswa'])->name('viewDataCalonMahasiswa');
+    Route::get('/datacalons2', [PMBController::class,'showDataCalonMahasiswas2'])->name('showDataCalonMahasiswas2');
+    Route::post('/datacalons2', [PMBController::class,'viewDataCalonMahasiswas2'])->name('viewDataCalonMahasiswas2');
 
-  //Absensi Dosen
-  Route::get('/absensidosen', [AbsensiController::class,'formRekapAbsensiDosen'])->name('formRekapAbsensiDosen');
-  Route::post('/absensidosen', [AbsensiController::class,'rekapAbsensiDosen'])->name('rekapAbsensiDosen');
-//Mahasiswa
-Route::get('/findMahasiswa', [MahasiswaController::class,'findMahasiswa'])->name('findMahasiswa');
-Route::get('/profilemahasiswa', [MahasiswaController::class,'showProfileMahasiswa'])->name('showProfileMahasiswa'); 
-Route::post('/profilemahasiswa', [MahasiswaController::class,'viewProfileMahasiswa'])->name('viewProfileMahasiswa');
-Route::post('/updateprofilemahasiswa', [MahasiswaController::class,'updateProfileMahasiswa'])->name('updateProfileMahasiswa');
+    //Absensi Dosen
+    Route::get('/absensidosen', [AbsensiController::class,'formRekapAbsensiDosen'])->name('formRekapAbsensiDosen');
+    Route::post('/absensidosen', [AbsensiController::class,'rekapAbsensiDosen'])->name('rekapAbsensiDosen');
+    //Mahasiswa
+    Route::get('/findMahasiswa', [MahasiswaController::class,'findMahasiswa'])->name('findMahasiswa');
+    Route::get('/profilemahasiswa', [MahasiswaController::class,'showProfileMahasiswa'])->name('showProfileMahasiswa'); 
+    Route::post('/profilemahasiswa', [MahasiswaController::class,'viewProfileMahasiswa'])->name('viewProfileMahasiswa');
+    Route::post('/updateprofilemahasiswa', [MahasiswaController::class,'updateProfileMahasiswa'])->name('updateProfileMahasiswa');
 
- //Matakuliah
- Route::get('/showmatkul', [MatakuliahController::class,'showMatakuliah'])->name('showMatakuliah'); 
- Route::post('/showmatkul', [MatakuliahController::class, 'viewMatakuliah'])->name('viewMatakuliah');
- Route::post('/search-matakuliah', [MatakuliahController::class, 'searchMatakuliah'])->name('searchMatakuliah');
- Route::get('/detailmatkul', [MatakuliahController::class, 'detailMataKuliah'])->name('detailMataKuliah');
- Route::post('/matakuliah/update', [MatakuliahController::class, 'updateMatakuliah'])->name('matakuliah.update'); 
- Route::post('/editpengampu', [MatakuliahController::class, 'editPengampu'])->name('matakuliah.editPengampu');
- Route::get('/matakuliah/add-pengampu', [MatakuliahController::class, 'tambahPengampu'])->name('matakuliah.addPengampu');
- Route::post('/matakuliah/add-pengampu', [MatakuliahController::class, 'addPengampu'])->name('matakuliah.addPengampu');
- Route::post('/updatepengampu', [MatakuliahController::class, 'updatePengampu'])->name('updatePengampu');
- Route::get('/addmatkul', [MatakuliahController::class, 'addMataKuliah'])->name('addMataKuliah'); 
- Route::post('/store-matakuliah', [MatakuliahController::class, 'tambahMatakuliah'])->name('tambahMatakuliah');
+    //Matakuliah
+    Route::get('/showmatkul', [MatakuliahController::class,'showMatakuliah'])->name('showMatakuliah'); 
+    Route::post('/showmatkul', [MatakuliahController::class, 'viewMatakuliah'])->name('viewMatakuliah');
+    Route::post('/search-matakuliah', [MatakuliahController::class, 'searchMatakuliah'])->name('searchMatakuliah');
+    Route::get('/detailmatkul', [MatakuliahController::class, 'detailMataKuliah'])->name('detailMataKuliah');
+    Route::post('/matakuliah/update', [MatakuliahController::class, 'updateMatakuliah'])->name('matakuliah.update'); 
+    Route::post('/editpengampu', [MatakuliahController::class, 'editPengampu'])->name('matakuliah.editPengampu');
+    Route::get('/matakuliah/add-pengampu', [MatakuliahController::class, 'tambahPengampu'])->name('matakuliah.addPengampu');
+    Route::post('/matakuliah/add-pengampu', [MatakuliahController::class, 'addPengampu'])->name('matakuliah.addPengampu');
+    Route::post('/updatepengampu', [MatakuliahController::class, 'updatePengampu'])->name('updatePengampu');
+    Route::get('/addmatkul', [MatakuliahController::class, 'addMataKuliah'])->name('addMataKuliah'); 
+    Route::post('/store-matakuliah', [MatakuliahController::class, 'tambahMatakuliah'])->name('tambahMatakuliah');
 
- //Kartu Mengajar
- Route::get('/showkartu', [DosenController::class, 'showKartuMengajar'])->name('showKartuMengajar'); 
- Route::post('/getHonorsks', [DosenController::class, 'getHonorSKS'])->name('getHonorSKS');
- Route::post('/showkartu', [DosenController::class, 'viewKartuMengajar'])->name('viewKartuMengajar');  
+    //Kartu Mengajar
+    Route::get('/showkartu', [DosenController::class, 'showKartuMengajar'])->name('showKartuMengajar'); 
+    Route::post('/getHonorsks', [DosenController::class, 'getHonorSKS'])->name('getHonorSKS');
+    Route::post('/showkartu', [DosenController::class, 'viewKartuMengajar'])->name('viewKartuMengajar'); 
+     //Alumni
+     Route::get('/showalumni', [AlumniController::class, 'showAlumni'])->name('showAlumni'); 
+     Route::post('/showalumni', [AlumniController::class, 'viewAlumni'])->name('viewAlumni'); 
 });
 
 

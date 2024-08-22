@@ -455,7 +455,7 @@
        if (searchQuery.length >= 4) {
            // Lakukan permintaan AJAX ke server untuk mencari Dosen
            $.ajax({
-                url: '{{ route("findDosen") }}',
+               url: '{{ route("findDosen1") }}',
                method: 'GET',
                data: { term: searchQuery },
                success: function (data) {

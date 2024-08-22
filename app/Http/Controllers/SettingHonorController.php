@@ -251,5 +251,70 @@ public function showSettingHonorS1()
     // Return a success response
     return response()->json(['success' => 'HONORSKS updated successfully!']);
 }
+public function showTunjanganDoktor()
+    {
+        // Ambil data jabatan dari database
+        $tunjdoktor = DB::table('tunjdoktor')->get();
+        foreach ($tunjdoktor as $item) {
+            // Jika 'honors2' tidak kosong
+            if (!is_null($item->jumlah)) {
+                $item->jumlah = number_format($item->jumlah, 0, ',', '.');
+            }
+        }
+        $allJenis = DB::table('JenisDosen')->select('idprimary', 'nama as statusdosen')->distinct()->get();
+        $allJenjang = DB::table('JENJANGAKADEMIK')->select('itemno', 'jenjangakademik as pendidikan')->distinct()->get();
+        // Kirimkan data jabatan ke view
+        return view('CMS.tunjungandoktor', compact('tunjdoktor','allJenis','allJenjang')); 
+    } 
+    public function simpanTunganDoktor(Request $request)
+    {
+        $ta = $request->input('ta');
+        $semester = $request->input('semester');
+        $jumlah = $request->input('jumlah');
+        $statusdosen = $request->input('statusdosen');
+        $pendidikan = $request->input('pendidikan');
+    
+        // Insert data into the database
+        DB::table('tunjdoktor')->insert([
+            'ta' => $ta,
+            'semester' => $semester,
+            'jumlah' => $jumlah,
+            'statusdosen' => $statusdosen,
+            'pendidikan' => $pendidikan
+        ]);
+    
+        // Send success message
+        return response()->json(['success' => 'Data berhasil ditambahkan!']);
+    }
+    public function activateTunganDoktor(Request $request)
+{
+    $ta = $request->input('ta');
+    $semester = $request->input('semester');
+    $statusdosen = $request->input('statusdosen');
+    $pendidikan = $request->input('pendidikan');
+    
+    // Retrieve the 'jumlah' values from the 'tunjdoktor' table based on 'ta', 'semester', 'statusdosen', and 'pendidikan'
+    $tunjdoktor = DB::table('tunjdoktor')
+        ->where('ta', $ta)
+        ->where('semester', $semester)
+        ->where('statusdosen', $statusdosen)
+        ->where('pendidikan', $pendidikan) // Perbaiki typo disini
+        ->value('jumlah');
+    
+        if($tunjdoktor) {
+            // Convert the amount from "500.000" format to numeric for database insertion
+            $tunjdoktor = str_replace('.', '', $tunjdoktor);
+    
+            // Update the 'tunjdoktor' column in the 'dosen' table with the retrieved value
+            DB::table('dosen')->update(['tunjdoktor' => $tunjdoktor]);
+    
+            // Return a success response
+            return response()->json(['success' => 'Tunjangan Doktor updated successfully!']);
+        } else {
+            // Jika tidak ada data yang ditemukan, kembalikan pesan error
+            return response()->json(['error' => 'Tunjangan Doktor not found!']);
+        }
+    }
 }
+
 

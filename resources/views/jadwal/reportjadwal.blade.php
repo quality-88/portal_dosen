@@ -117,6 +117,7 @@
                                     <th>Matakuliah</th>
                                     <th>SKS</th>
                                     <th>Kelas</th>
+                                    <th>JlhMhs</th>
                                     <th>Masuk</th>
                                     <th>Keluar</th>
                                     <th>Ruang</th>
@@ -142,6 +143,7 @@
                                         <td>{{ $result->matakuliah }}</td>
                                         <td>{{ $result->sks }}</td>
                                         <td>{{ $result->kelas }}</td>
+                                        <td>{{ $result->jumlah_mahasiswa }}</td>
                                         <td>{{ $result->jammasuk }}</td>
                                         <td>{{ $result->jamkeluar }}</td>
                                         <td>{{ $result->idruang }}</td>
@@ -238,6 +240,7 @@ function downloadpdf() {
         { title: "Matakuliah", dataKey: "matakuliah" },
         { title: "SKS", dataKey: "sks" },
         { title: "Kelas", dataKey: "kelas" },
+        { title: "JlhMhs", dataKey: "jumlah_mahasiswa" },
         { title: "Masuk", dataKey: "jammasuk" },
         { title: "Keluar", dataKey: "jamkeluar" },
         { title: "Ruang", dataKey: "idruang" },
@@ -320,14 +323,15 @@ function downloadpdf() {
                 3: { cellWidth: 100 }, // Matakuliah
                 4: { cellWidth: 30 }, // SKS
                 5: { cellWidth: 40 }, // Kelas
-                6: { cellWidth: 40 }, // jam masuk
-                7: { cellWidth: 40 }, // jam keluar
-                8: { cellWidth: 50 }, // Ruang
-                9: { cellWidth: 80 }, // Dosen Pengampu
-                10: { cellWidth: 80 }, // Dosen Pengajar
-                11: { cellWidth: 80 }, // Dosen 1
-                12: { cellWidth: 80 }, // Dosen 2
-                13: { cellWidth: 50 }  // Gabungan
+                6: { cellWidth: 40 }, // jlhmhs
+                7: { cellWidth: 40 }, // jam masuk
+                8: { cellWidth: 40 }, // jam keluar
+                9: { cellWidth: 40 }, // Ruang
+                10: { cellWidth: 80 }, // Dosen Pengampu
+                11: { cellWidth: 80 }, // Dosen Pengajar
+                12: { cellWidth: 60 }, // Dosen 1
+                13: { cellWidth: 60 }, // Dosen 2
+                14: { cellWidth: 50 }  // Gabungan
             },
             headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] }, // White header background, black text
             bodyStyles: { fillColor: [255, 255, 255] } // White body
@@ -394,6 +398,7 @@ function downloadExcel() {
             "Matakuliah",
             "SKS",
             "Kelas",
+            "JlhMhs",
             "Dosen Pengampu",
             "Dosen Pengajar",
             "Dosen 1",
@@ -411,6 +416,7 @@ function downloadExcel() {
                 row.matakuliah,
                 row.sks,
                 row.kelas,
+                row.jumlah_mahasiswa,
                 row.dosen,
                 row.nama_dosen2,
                 row.nama_dosen3,

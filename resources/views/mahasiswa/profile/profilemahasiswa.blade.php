@@ -225,7 +225,7 @@
                                                 <div class="mb-3">
                                                     <label class="form-label">Status Mahasiswa</label>
                                                     <div class="input-group">
-                                                        <input type="text" class="form-control" id="statusmhs" name="statusmhs" value="{{ $profile->statusmhs ?? '' }}" >            
+                                                        <input type="text" class="form-control" id="statusmhs" name="statusmhs" value="{{ $profile->statusmhs ?? '' }}" readonly >            
                                                     </div>
                                                 </div>
                                             </div>

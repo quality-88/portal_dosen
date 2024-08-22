@@ -1427,12 +1427,12 @@ $(document).ready(function() {
             _token: '{{ csrf_token() }}' // Pastikan Anda menambahkan token CSRF
         };
 
-        // Kirim data menggunakan AJAX
         $.ajax({
-            url: '{{ route("simpan.data") }}', // Ganti dengan URL endpoint penyimpanan Anda
+            url: '{{ route("simpan.data") }}',
             type: 'POST',
             data: formData,
             success: function(response) {
+                console.log('AJAX Success Response:', response); // Log the response
                 if (response.status === 'error') {
                     if (response.message === 'Dosen sudah memiliki kelas pada jam yang sama') {
                         let message = 'Dosen sudah memiliki kelas pada jam yang sama:\n\n';
@@ -1458,6 +1458,14 @@ $(document).ready(function() {
                             text: detailsMessage,
                             confirmButtonText: 'OK'
                         });
+                    } else {
+                        // Generic error handling
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        });
                     }
                 } else if (response.status === 'success') {
                     Swal.fire({
@@ -1466,12 +1474,12 @@ $(document).ready(function() {
                         text: 'Jadwal berhasil disimpan.',
                         confirmButtonText: 'OK'
                     }).then(function() {
-                        // Reload halaman setelah notifikasi ditutup
                         location.reload();
                     });
                 }
             },
-            error: function(xhr) {
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', status, error); // Log any AJAX errors
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -1480,6 +1488,7 @@ $(document).ready(function() {
                 });
             }
         });
+
     });
 });
 

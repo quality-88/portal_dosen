@@ -78,7 +78,13 @@ class AuthController extends Controller
                 break;
             case 'KEMAHASISWAAN':
                 return 'dashboard';
-                break;    
+                break;  
+            case 'Fungsionaris UQ':
+                return 'dashboard';
+                break;
+            case 'Fungsionaris UQB':
+                return 'dashboard';
+                break;            
             default:
             return 'login';    
             

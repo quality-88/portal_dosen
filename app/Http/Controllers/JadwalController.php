@@ -506,6 +506,7 @@ public function simpan(Request $request)
     ]);
 
     return response()->json(['status' => 'success']);
+    Log::info('Query results', ['results' => $results]);
 }
 
 
@@ -682,14 +683,14 @@ public function showReportJadwal (Request $request)
         session(['fakultas' => $fakultas]);
         // Map numeric day values to day names
         $results = DB::table('jadwalprimary')
-            ->join('matakuliah', 'jadwalprimary.idmk', '=', 'matakuliah.idmk')
-            ->join('dosen', 'jadwalprimary.iddosen', '=', 'dosen.iddosen')
-            ->leftJoin('dosen AS dosen2', 'jadwalprimary.iddosen2', '=', 'dosen2.iddosen')
-            ->leftJoin('dosen AS dosen3', 'jadwalprimary.iddosen3', '=', 'dosen3.iddosen') // Join kembali ke tabel dosen untuk dosen kedua
-            ->leftJoin('dosen AS dosen4', 'jadwalprimary.iddosen4', '=', 'dosen4.iddosen')
-            ->select(
-                'jadwalprimary.idprimary',
-                DB::raw("
+        ->join('matakuliah', 'jadwalprimary.idmk', '=', 'matakuliah.idmk')
+        ->join('dosen', 'jadwalprimary.iddosen', '=', 'dosen.iddosen')
+        ->leftJoin('dosen AS dosen2', 'jadwalprimary.iddosen2', '=', 'dosen2.iddosen')
+        ->leftJoin('dosen AS dosen3', 'jadwalprimary.iddosen3', '=', 'dosen3.iddosen') 
+        ->leftJoin('dosen AS dosen4', 'jadwalprimary.iddosen4', '=', 'dosen4.iddosen')
+        ->select(
+            'jadwalprimary.idprimary',
+            DB::raw("
                 CASE
                     WHEN jadwalprimary.harijadwal = 1 THEN 'Senin'
                     WHEN jadwalprimary.harijadwal = 2 THEN 'Selasa'
@@ -701,34 +702,46 @@ public function showReportJadwal (Request $request)
                     ELSE 'Unknown'
                 END AS hari
             "),
-                'jadwalprimary.harijadwal',
-                'jadwalprimary.kurikulum',
-                'jadwalprimary.idmk',
-                'matakuliah.matakuliah as matakuliah',
-                'jadwalprimary.sks',
-                'jadwalprimary.kelas',
-                'jadwalprimary.iddosen',
-                'dosen.nama as dosen',
-                'jadwalprimary.jammasuk',
-                'jadwalprimary.jamkeluar',
-                'jadwalprimary.idruang',
-                'jadwalprimary.gabungan',
-                'jadwalprimary.iddosen2',
-                'dosen2.nama AS nama_dosen2',
-                'jadwalprimary.iddosen3', 
-                'dosen3.nama AS nama_dosen3',
-                'jadwalprimary.SK2',
-                'jadwalprimary.iddosen4', 
-                'dosen4.nama AS nama_dosen4',
-                'jadwalprimary.SK3'
-            )
-            ->where('jadwalprimary.ta', $ta)
-            ->where('jadwalprimary.semester', $semester)
-            ->where('jadwalprimary.idkampus', $idkampus)
-            ->where('jadwalprimary.prodi', $prodi)
-            ->where('jadwalprimary.Validasi', 'T')
-            ->orderBy($orderby)
-            ->get();
+            'jadwalprimary.harijadwal',
+            'jadwalprimary.kurikulum',
+            'jadwalprimary.idmk',
+            'matakuliah.matakuliah as matakuliah',
+            'jadwalprimary.sks',
+            'jadwalprimary.kelas',
+            'jadwalprimary.iddosen',
+            'dosen.nama as dosen',
+            'jadwalprimary.jammasuk',
+            'jadwalprimary.jamkeluar',
+            'jadwalprimary.idruang',
+            'jadwalprimary.gabungan',
+            'jadwalprimary.iddosen2',
+            'dosen2.nama AS nama_dosen2',
+            'jadwalprimary.iddosen3', 
+            'dosen3.nama AS nama_dosen3',
+            'jadwalprimary.SK2',
+            'jadwalprimary.iddosen4', 
+            'dosen4.nama AS nama_dosen4',
+            'jadwalprimary.SK3',
+            DB::raw("
+                (SELECT COUNT(O.npm)
+                 FROM KRSDetail O
+                 WHERE O.IdMK = jadwalprimary.idmk
+                 AND O.ta = jadwalprimary.ta
+                 AND O.Semester = jadwalprimary.semester
+                 AND O.KELAS = jadwalprimary.kelas
+                 AND O.IDKAMPUS = jadwalprimary.idkampus
+                 AND O.prodi = jadwalprimary.prodi
+                ) as jumlah_mahasiswa
+            ")
+        )
+        ->where('jadwalprimary.ta', $ta)
+        ->where('jadwalprimary.semester', $semester)
+        ->where('jadwalprimary.idkampus', $idkampus)
+        ->where('jadwalprimary.prodi', $prodi)
+        ->where('jadwalprimary.Validasi', 'T')
+        ->orderBy($orderby)
+        ->get();
+        //dd($results);
     
         $allIdKampus = DB::table('kampus')->select('idkampus', 'lokasi')->distinct()->get();
         $allProdi = DB::table('prodifakultas')->select('idfakultas', 'prodi')->distinct()->get();
