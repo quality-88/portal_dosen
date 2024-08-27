@@ -136,6 +136,12 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('showKartuMengajar') }}">Kartu Mengajar Dosen</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showRekapSksDosen') }}">Rekap Beban SKS Dosen</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('showRincianSksDosen') }}">Rincian SKS Dosen</a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -231,10 +237,10 @@
                 <div class="collapse" id="jabatan">
                     <ul class="nav sub-menu">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('formKaprodi') }}">Jabatan Rektorat</a>
+                            <a class="nav-link" href="{{ route('formKaprodi') }}">Jabatan Fungsionaris</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('showViewJabatan') }}">View Jabatan Rektorat</a>
+                            <a class="nav-link" href="{{ route('showViewJabatan') }}">View Jabatan Fungsionaris</a>
                         </li>
                     </ul>
                 </div>

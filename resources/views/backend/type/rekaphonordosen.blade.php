@@ -210,7 +210,9 @@
                         const formattedDate = currentDate.toLocaleDateString('en-US');
                         const formattedTime = currentDate.toLocaleTimeString('en-US');
                         const printDateTime = `Print Date: ${formattedDate} / Print Time: ${formattedTime}`;
-                        doc.text(printDateTime, 50, doc.internal.pageSize.height - 20);
+                        const bottomYPosition = doc.internal.pageSize.height - 20;
+                        doc.text(printDateTime, 50, bottomYPosition);
+                        doc.text('Downloaded from Q-Enterprise', 50, bottomYPosition + 15);
                         const fileName = `Rekap_Honor_Dosen_Tahun${tahun}_${bulan}.pdf`;
                         doc.save(fileName);
                     }

@@ -933,6 +933,7 @@ function validateAllByDay() {
 
 // Function to handle row validation
 function validateRow(idprimary) {
+    var harijadwal = $('#harijadwal').val();
     // Tampilkan SweetAlert untuk konfirmasi validasi
     Swal.fire({
         title: 'Apakah Anda yakin?',
@@ -950,6 +951,7 @@ function validateRow(idprimary) {
                 url: '{{ route("validateJadwal") }}',
                 method: 'POST',
                 data: { idprimary: idprimary,
+                        harijadwal: harijadwal,
                     _token: $('meta[name="csrf-token"]').attr('content')
                  },
                 success: function(response) {
@@ -1540,6 +1542,7 @@ $(document).ready(function() {
             type: 'POST',
             data: formData,
             success: function(response) {
+                console.log(response);
                 if (response.status === 'error') {
                     if (response.message === 'Dosen sudah memiliki kelas pada jam yang sama') {
                         let message = 'Dosen sudah memiliki kelas pada jam yang sama:\n\n';
@@ -1579,6 +1582,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
+                console.log(xhr);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',

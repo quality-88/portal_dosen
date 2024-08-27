@@ -10,18 +10,29 @@
                     <hr class="my-4">
                     <form class="row g-5" action="{{ route('simpanHonorPokok') }}" method="POST" id="tunjakademik">
                         @csrf
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="ta" class="form-label">TA</label>
                             <input type="text" class="form-control" id="ta" name="ta" required>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-1">
                             <label for="semester" class="form-label">Semester</label>
                             <input type="text" class="form-control" id="semester" name="semester" required>
                         </div>
                         <div class="col-md-3">
                             <label for="level" class="form-label">Level</label>
-                            <input type="text" class="form-control" id="level" name="level" required>
+                            <select class="form-control select2" id="level" name="level" required>
+                                <option value="" disabled selected>Pilih Level</option>
+                                @foreach($allLevel as $level)
+                                    <option value="{{ $level->leveldosen }}" data-jabatan="{{ $level->jabatanakademik }}">{{ $level->leveldosen }} - {{ $level->jabatanakademik }}</option>
+                                @endforeach
+                            </select>
                         </div>
+                        
+                        <div class="col-md-3">
+                            <label for="jabatanakademik" class="form-label">Jabatan Akademik</label>
+                            <input type="text" class="form-control" id="jabatanakademik" name="jabatanakademik" readonly>
+                        </div>
+                        
                         <div class="col-md-3">
                             <label for="jumlah" class="form-label">Jumlah</label>
                             <input type="text" class="form-control" id="jumlah" name="jumlah" required>
@@ -48,6 +59,7 @@
                                 <th>TA</th>
                                 <th>Semester</th>
                                 <th>Level Dosen</th>
+                                <th>Jabatan Akademik</th>
                                 <th>Jumlah</th>
                                 <th>Aksi</th>
                             </tr>
@@ -59,10 +71,15 @@
                                     <td>{{ $j->TA }}</td>
                                     <td>{{ $j->semester }}</td>
                                     <td>{{ $j->leveldosen }}</td>
+                                    <td>{{ $j->jabatanakademik }}</td>
                                     <td>{{ number_format($j->jumlah, 0, ',', '.') }}</td>
                                     <td>
-                                        <button class="btn btn-primary activateButton" data-ta="{{ $j->TA }}"
-                                             data-semester="{{ $j->semester }}" data-statusdosen="{{ $j->leveldosen }}">Activate</button>
+                                        <button class="btn btn-primary activateButton" 
+                                                data-ta="{{ $j->TA }}"
+                                                data-semester="{{ $j->semester }}"
+                                                data-leveldosen="{{ $j->leveldosen }}" 
+                                                data-jabatanakademik="{{ $j->jabatanakademik }}">Activate</button>
+
                                     </td>
                                 </tr>
                             @endforeach
@@ -132,54 +149,71 @@
         });
     });
 });
+$(document).ready(function() {
+      
 
+        // Ketika pilihan dropdown level berubah
+        $('#level').change(function() {
+            var selectedOption = $(this).find('option:selected');
+            var jabatanakademik = selectedOption.data('jabatan');
+            
+            // Set nilai jabatanakademik pada field yang sesuai
+            $('#jabatanakademik').val(jabatanakademik);
+        });
+    });
     $(document).ready(function () {
-        $('.activateButton').click(function () {
-            var ta = $(this).data('ta');
-            var semester = $(this).data('semester');
-            var statusdosen = $(this).data('statusdosen'); // Add this line
-            console.log('Respons sukses:', statusdosen);
-            $.ajax({
-                url: "{{ route('activateHonorPokok') }}",
-                method: 'POST',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    ta: ta,
-                    semester: semester,
-                    statusdosen: statusdosen // Add this line
-                },
-                success: function (response) {
-                    if (response && response.success) {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: response.success,
-                            icon: 'success',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(function () {
-                            window.location.reload(); // Reload page after success
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: response.error || 'Failed to update Honor Pokok',
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error('Error:', error);
+    $('.activateButton').click(function () {
+        var ta = $(this).data('ta');
+        var semester = $(this).data('semester');
+        var leveldosen = $(this).data('leveldosen'); // Pastikan ini adalah data yang benar
+        var jabatanakademik = $(this).data('jabatanakademik'); // Pastikan ini adalah data yang benar
+
+        console.log('Data yang dikirim:', { ta, semester, leveldosen, jabatanakademik }); // Debugging output
+
+        $.ajax({
+            url: "{{ route('activateHonorPokok') }}",
+            method: 'POST',
+            data: {
+                _token: "{{ csrf_token() }}",
+                ta: ta,
+                semester: semester,
+                leveldosen: leveldosen,
+                jabatanakademik: jabatanakademik
+            },
+            success: function (response) {
+                console.log('Respons sukses:', response); // Debugging output
+                if (response && response.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: response.success,
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(function () {
+                        window.location.reload(); // Reload page after success
+                    });
+                } else {
                     Swal.fire({
                         title: 'Error!',
-                        text: 'An error occurred while updating Honor Pokok',
+                        text: response.error || 'Failed to update Honor Pokok',
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
                 }
-            });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while updating Honor Pokok',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
         });
     });
+});
+
 </script>
 
 @endsection

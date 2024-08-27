@@ -326,11 +326,19 @@ Route::group(['middleware' => ['auth', 'CheckLoginTime']], function () {
     Route::post('/updatepengampu', [MatakuliahController::class, 'updatePengampu'])->name('updatePengampu');
     Route::get('/addmatkul', [MatakuliahController::class, 'addMataKuliah'])->name('addMataKuliah'); 
     Route::post('/store-matakuliah', [MatakuliahController::class, 'tambahMatakuliah'])->name('tambahMatakuliah');
-
+    ////DOSEN////
     //Kartu Mengajar
     Route::get('/showkartu', [DosenController::class, 'showKartuMengajar'])->name('showKartuMengajar'); 
     Route::post('/getHonorsks', [DosenController::class, 'getHonorSKS'])->name('getHonorSKS');
-    Route::post('/showkartu', [DosenController::class, 'viewKartuMengajar'])->name('viewKartuMengajar'); 
+    Route::post('/showkartu', [DosenController::class, 'viewKartuMengajar'])->name('viewKartuMengajar');  
+    Route::get('/tambah', [MahasiswaController::class, 'showTambahMahasiswa'])->name('showTambahMahasiswa');  
+    Route::post('/tambah', [MahasiswaController::class, 'insertProfileMahasiswa'])->name('insertProfileMahasiswa');
+    //Rekap SKS DOSEN
+    Route::get('/showrekapsks', [DosenController::class, 'showRekapSksDosen'])->name('showRekapSksDosen'); 
+    Route::post('/showrekapsks', [DosenController::class, 'viewRekapSksDosen'])->name('viewRekapSksDosen');
+    //Rincian SKS DOSEN
+    Route::get('/showrinciansks', [DosenController::class, 'showRincianSksDosen'])->name('showRincianSksDosen');
+    Route::post('/showrinciansks', [DosenController::class, 'viewRincianSksDosen'])->name('viewRincianSksDosen'); 
      //Alumni
      Route::get('/showalumni', [AlumniController::class, 'showAlumni'])->name('showAlumni'); 
      Route::post('/showalumni', [AlumniController::class, 'viewAlumni'])->name('viewAlumni'); 

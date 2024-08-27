@@ -131,9 +131,10 @@ public function simpanLevelDosen(Request $request)
 }
 public function showHonorPokok()
 {
+    $allLevel = DB::table('leveldosen')->select('leveldosen', 'jabatanakademik')->distinct()->get();
     $leveldosen = DB::table('honorpokokdosen')->get();
     //dd($tunjakademik);
-    return view('CMS.honorpokokdosen', compact('leveldosen'));
+    return view('CMS.honorpokokdosen', compact('leveldosen','allLevel'));
 }
 public function simpanHonorPokok(Request $request)
 {
@@ -141,14 +142,15 @@ public function simpanHonorPokok(Request $request)
     $semester = $request->input('semester');
     $level = $request->input('level');
     $jumlah = $request->input('jumlah');
-
+    $jabatanakademik = $request->input('jabatanakademik');
     $jumlah = str_replace('.', ',', $jumlah);
 
     DB::table('honorpokokdosen')->insert([
         'ta' => $ta,
         'semester' => $semester,
         'leveldosen' => $level,
-        'jumlah' => $jumlah
+        'jumlah' => $jumlah,
+        'jabatanakademik' => $jabatanakademik
     ]);
 
     return response()->json(['success' => 'Data berhasil ditambahkan!']);
@@ -158,10 +160,11 @@ public function activateHonorPokok(Request $request)
     $ta = $request->input('ta');
     $semester = $request->input('semester');
     $leveldosen = $request->input('leveldosen');
-
+    $jabatanakademik = $request->input('jabatanakademik');
     // Retrieve the level criteria from the leveldosen table
     $levelCriteria = DB::table('leveldosen')
         ->where('leveldosen', $leveldosen)
+        ->where('jabatanakademik',$jabatanakademik)
         ->first();
 
     if (!$levelCriteria) {
@@ -170,9 +173,6 @@ public function activateHonorPokok(Request $request)
 
     // Check if there are dosen records matching the criteria
     $dosen = DB::table('dosen')
-        ->where('pendidikan', $levelCriteria->pendidikan)
-        ->where('nidn', $levelCriteria->nidn)
-        ->where('statusdosen', $levelCriteria->statusdosen)
         ->where('jabatanakademik', $levelCriteria->jabatanakademik)
         ->exists();
 

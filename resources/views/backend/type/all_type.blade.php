@@ -474,15 +474,17 @@ function downloadPDF() {
                 valign: 'middle',
                 halign: 'center',
             },
-            alternateRowStyles: {
-                fillColor: [193, 202, 237],
-            },
         });
     }
 
     // Save the PDF file
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString('en-US');
+    const formattedTime = currentDate.toLocaleTimeString('en-US');
+     const printDateTime = `Print Date: ${formattedDate} / Print Time: ${formattedTime}`;
+     const bottomYPosition = doc.internal.pageSize.height - 20;
+     doc.text(printDateTime, 50, bottomYPosition);
+     doc.text('Downloaded from Q-Enterprise', 50, bottomYPosition + 15);
     const fileName = `daftar honor dosen_${lokasi}_${prodi}_${formattedDate}.pdf`;
     doc.save(fileName);
     
